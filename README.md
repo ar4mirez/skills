@@ -34,9 +34,6 @@ npx skills add ar4mirez/skills --skill shape-up -g # install globally, for all p
 directory, for example `~/.claude/skills/<name>` or `.agents/skills/<name>`.
 Each skill directory is self-contained.
 
-> The repository is currently private. Installing it requires GitHub access
-> (`gh auth login`, or SSH keys) until it's made public.
-
 ## Development
 
 Requirements: Python 3.9+ and `make`. Optionally, install
