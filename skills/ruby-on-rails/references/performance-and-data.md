@@ -13,6 +13,8 @@ missing caching, or work done in the request that belongs in a job.
 - Background jobs at scale
 - Runtime: Puma, YJIT, memory
 - Scaling the database
+- Connection pooling with PgBouncer
+- Search: Postgres first, then searchkick + OpenSearch
 - Pagination, counting, and big tables
 
 ## Diagnose first
@@ -149,10 +151,88 @@ Go in order:
 7. Horizontal sharding (`connects_to shards:`) as a last resort, with a clear
    shard key (the tenant).
 
+**Real-time:** Solid Cable (database-backed) is the production default.
+Action Cable's `async` adapter is development/test only. Move to a
+Redis/KeyDB-backed cable only at very high fan-out (tens of thousands of
+concurrent subscribers or more), measured first.
+
 **SQLite in production** is valid for a single server: WAL mode (the default),
 Litestream for continuous backup, and Solid Queue, Cache, and Cable on
 separate SQLite files. Move to PostgreSQL when you need more than one app
 server or heavy concurrent writes.
+
+## Connection pooling with PgBouncer
+
+Add PgBouncer when `workers × threads × hosts` (plus Solid Queue threads)
+approaches Postgres `max_connections`, or when you run many short-lived
+processes.
+
+- Run it in **transaction pooling mode** (`pool_mode = transaction`) for real
+  multiplexing. Transaction mode breaks session-level features, so configure
+  Rails for it:
+  ```yaml
+  # config/database.yml (production primary, via PgBouncer)
+  production:
+    primary:
+      <<: *default
+      url: <%= ENV["DATABASE_URL"] %>          # points at PgBouncer
+      prepared_statements: false               # required in transaction mode
+      advisory_locks: false                    # migrations use advisory locks
+  ```
+- **Run migrations over a direct connection** that bypasses PgBouncer. Keep
+  a `DATABASE_DIRECT_URL` secret and run
+  `DATABASE_URL=$DATABASE_DIRECT_URL bin/rails db:migrate` (for example, in
+  the Kamal `pre-deploy` hook, or in the container entrypoint for the
+  migration step).
+- Don't use session state through PgBouncer: no `SET` without `LOCAL`, no
+  `LISTEN/NOTIFY`, no session advisory locks. Solid Queue uses
+  `FOR UPDATE SKIP LOCKED` inside transactions, which works in transaction
+  mode.
+- Size it as: PgBouncer `default_pool_size` ≈ what Postgres can actually run
+  concurrently (about 2–4× cores). The Rails `pool` stays at your thread
+  count.
+- Watch `SHOW POOLS;` for waiting clients. Waiting means the pool or the
+  queries are too slow, not that you need more app servers.
+
+## Search: Postgres first, then searchkick + OpenSearch
+
+1. **Filters and simple matching:** use scopes plus indexes, `ILIKE` with a
+   `pg_trgm` GIN index for "contains", and `tsvector` columns for basic
+   full-text. There's no extra infrastructure.
+2. **Search as a product feature** (fuzzy or typo-tolerant matching,
+   relevance tuning, autocomplete, facets, synonyms, large corpora): use
+   **searchkick + OpenSearch**.
+
+```ruby
+module Catalog
+  class Product < ApplicationRecord
+    searchkick word_start: [:name], callbacks: :async   # reindex via Active Job (Solid Queue)
+
+    scope :search_import, -> { includes(:brand) }       # avoid N+1 when reindexing
+
+    def search_data
+      { name:, brand: brand.name, price_cents:, account_id:, published: published? }
+    end
+  end
+end
+
+Catalog::Product.search("wirless hedphones", fields: [:name], match: :word_start,
+                        where: { account_id: Current.account.id, published: true },
+                        misspellings: { below: 3 }, page: params[:page], per_page: 20)
+```
+
+- **Always filter by tenant in `where:`.** The search index sits outside
+  Postgres row-level scoping.
+- Put search behind a domain query object (`Catalog::SearchProducts.call(...)`)
+  so the engine can change without touching controllers.
+- Reindex with zero downtime (`Product.reindex` builds a new index, then
+  swaps the alias). Run large reindexes in a job with `async: true`.
+- OpenSearch runs as a managed service, or as a Kamal accessory on its own
+  host with enough RAM. Snapshot it, but treat it as rebuildable from
+  Postgres, which stays the source of truth.
+- In tests, disable callbacks globally (`Searchkick.disable_callbacks`), and
+  enable them only in the specs that exercise search against a test
+  OpenSearch service.
 
 ## Pagination, counting, and big tables
 

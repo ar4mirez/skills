@@ -8,104 +8,114 @@ release of these versions for new ones.
 
 | Component | Version | Notes |
 |---|---|---|
-| Ruby | 4.0.x (4.0.7); 3.4.x is still fine | Ruby 4.0 (Dec 2025) added ZJIT (experimental), `Ruby::Box` (experimental, `RUBY_BOX=1`), and a reworked Ractor API. Use YJIT in production. |
+| Ruby | 4.0.x (4.0.7); 3.4.x is still fine | Ruby 4.0 (Dec 2025) added ZJIT (experimental), `Ruby::Box` (experimental), and a reworked Ractor API. Use YJIT in production. |
 | Rails | 8.1.x (8.1.4) | 8.1 adds Active Job continuations, `Rails.event` structured events, local CI (`config/ci.rb` + `bin/ci`), Markdown rendering, deprecated associations, `rails credentials:fetch`, and registry-free Kamal deploys. It requires Ruby ≥ 3.2. |
 | Rails 8.0 features | | Kamal 2, Thruster, Solid Cache/Queue/Cable, Propshaft by default, the authentication generator, `params.expect` |
-| turbo-rails / stimulus-rails | 2.0.x / 1.3.x | Turbo 8: morphing page refreshes, `hotwire_native_app?` |
-| solid_queue / solid_cache / solid_cable | 1.7 / 1.0 / 4.0 | Database-backed; no Redis |
-| kamal / thruster | 2.12 / 0.1.x | |
-| propshaft / importmap-rails / tailwindcss-rails | 1.3 / 2.2 / 4.x (Tailwind v4) | |
-| Hotwire Native | iOS 1.3.x, Android 1.3.x | Swift Package `hotwire-native-ios`; Gradle `dev.hotwire:core` and `dev.hotwire:navigation-fragments` |
-| Supporting gems | rubocop-rails-omakase 1.1, brakeman 8, bundler-audit 0.9, pagy 43, mission_control-jobs 1.3, view_component 4, pundit 2.5, strong_migrations 2.8, prosopite 2.2, rack-mini-profiler 5 | |
+| Hotwire | turbo-rails 2.0.x, stimulus-rails 1.3.x | Turbo 8 morphing. `hotwire_native_app?` helpers |
+| Hotwire Native | iOS 1.3.x, Android 1.3.x | This is the current name for "Turbo Native". "Strada" is now **Bridge Components**, built in |
+| Solid stack | solid_queue 1.7, solid_cache 1.0, solid_cable 4.0 | Database-backed, so no Redis |
+| Deploy | kamal 2.12, thruster 0.1.x | |
+| Views | view_component 4.15, tailwindcss-rails 4.x (Tailwind v4), lookbook 2.3 (optional previews) | |
+| Boundaries | packwerk 3.3, packwerk-extensions 0.3 (privacy checker) | |
+| Auth | Rails 8 authentication generator, pundit 2.5 | |
+| Tests | rspec-rails 8.0, factory_bot_rails 6.5, shoulda-matchers 8.0, capybara 3.40 | |
+| Quality | rubocop-rails 2.38, rubocop-rspec 3.10, rubocop-factory_bot 2.28, brakeman 8, bundler-audit 0.9 | |
+| Search | searchkick 6.1 + opensearch-ruby 3.4 | |
+| Observability | sentry-ruby / sentry-rails 7.0; `datadog` 2.x (formerly `ddtrace`) or newrelic_rpm 10.x | |
+| Edge | Cloudflare in front of kamal-proxy; `cloudflare-rails` 7 for correct `remote_ip` | |
 
 ## New app
 
 ```bash
-# Multi-server, or anything with growth ahead:
-rails new acme --database=postgresql --css=tailwind
-
-# Single-server product or internal tool (SQLite is production-grade in Rails 8):
-rails new acme --css=tailwind
-
+rails new acme --database=postgresql --css=tailwind --skip-test
 cd acme
-bin/rails generate authentication
-bin/setup
-bin/dev
+
+bin/rails generate authentication                        # Rails 8 session scaffolding
+bundle add view_component pundit pagy mission_control-jobs strong_migrations
+bundle add rspec-rails factory_bot_rails shoulda-matchers --group=development,test
+bundle add packwerk packwerk-extensions --group=development,test
+bundle add capybara selenium-webdriver webmock --group=test
+bundle add rubocop-rails rubocop-rspec rubocop-factory_bot --group=development --require=false
+bundle add sentry-ruby sentry-rails
+
+bin/rails generate rspec:install
+bin/rails generate pundit:install
+bundle binstubs packwerk && bin/packwerk init
 ```
 
-Leave these defaults alone: importmap, Propshaft, Solid Queue/Cache/Cable,
-Kamal, Thruster, Minitest, `rubocop-rails-omakase`, Brakeman, and the GitHub
-CI workflow.
+Then:
+1. Copy `assets/.rubocop.yml`, `assets/github-ci.yml` (to
+   `.github/workflows/ci.yml`), and `assets/ci.rb` (to `config/ci.rb`).
+2. Create `app/domains/` with the first domain, its `package.yml` (see
+   `assets/package.yml`), and the Zeitwerk collapse initializer (see
+   `architecture.md`).
+3. Add `app/models/application_result.rb`, and a first operation from
+   `assets/operation_template.rb`.
+4. Mount `MissionControl::Jobs::Engine` at `/jobs`, behind an admin
+   constraint.
+5. Run `bin/setup`, then `bin/dev`.
 
-Change a default only for a specific reason:
+Rails defaults you keep: importmap, Propshaft, Solid Queue/Cache/Cable,
+Kamal, Thruster, and Brakeman.
 
-| Flag | Use it only when... |
-|---|---|
-| `--javascript=esbuild` or `bun` | You need npm packages that don't work through importmap, like a rich-text editor or a charting library with a build step |
-| `--api` | The app is purely a JSON backend for existing native or SPA clients. With Hotwire Native, keep the full app |
-| `-T` (skip Minitest) | Only if the team is committed to RSpec. Then add rspec-rails and factory_bot_rails |
+Add these only when there's a need:
+- **searchkick + OpenSearch,** once search is a real feature (fuzzy matching,
+  relevance, autocomplete, facets). Before that, use Postgres (`ILIKE`,
+  `pg_trgm`, `tsvector`). See `performance-and-data.md`.
+- **PgBouncer,** once connection counts outgrow Postgres (many Puma workers,
+  many hosts). See `performance-and-data.md` for the transaction-mode
+  settings.
+- **Datadog or New Relic APM,** once there's production traffic worth
+  profiling. Sentry covers errors from day one.
+- **Cloudflare,** once the app is public, for DNS, the CDN, and DDoS
+  protection. See `deploy-and-operate.md`.
+- **A JS bundler** (`jsbundling-rails` with esbuild), only for a
+  client-heavy island that needs npm packages that don't work through
+  importmap.
 
-## Baseline Gemfile additions
-
-See `assets/Gemfile.example` for the full file. Add these on top of the
-`rails new` defaults:
-
-```ruby
-gem "pagy"                       # pagination: fast, no model pollution
-gem "mission_control-jobs"       # Solid Queue dashboard (mount behind auth)
-gem "strong_migrations"          # blocks unsafe migrations (Postgres/MySQL apps)
-
-group :development do
-  gem "rack-mini-profiler"       # always-on profiling badge in development
-end
-
-group :development, :test do
-  gem "prosopite"                # N+1 detection (or rely on strict_loading)
-end
-```
-
-Don't add these by default: `devise` (use the generator), `sidekiq` and
-`redis` (use the Solid stack), `dry-*`, `interactor`, `trailblazer`,
-`draper`, `aasm` (enums plus methods cover most state), `paranoia` or
-`discard` (use a `Trashable` concern), and `annotate` (read `schema.rb`).
+Don't add these: Redis or Sidekiq by reflex (the Solid stack covers them),
+Devise (use the generator), `dry-*`, `interactor`, or `trailblazer` (use the
+plain operation convention), `draper` (use ViewComponent), `aasm` (enums plus
+operations), a React or Vue SPA, or Kubernetes.
 
 ## Configuration worth setting
 
 ```ruby
 # config/application.rb
-config.active_record.strict_loading_by_default = true   # lazy loads raise or log (see below)
-config.active_job.queue_adapter = :solid_queue          # already the default in production
+config.active_record.strict_loading_by_default = true        # lazy loads raise or log
+config.generators do |g|
+  g.test_framework :rspec, fixtures: false
+  g.factory_bot dir: "spec/factories"
+  g.helper false
+  g.stylesheets false
+end
 
 # config/environments/development.rb and test.rb
 config.active_record.action_on_strict_loading_violation = :raise
 config.i18n.raise_on_missing_translations = true
-config.action_dispatch.verbose_redirect_logs = true     # Rails 8.1
+config.action_dispatch.verbose_redirect_logs = true          # Rails 8.1
 
 # config/environments/production.rb
 config.active_record.action_on_strict_loading_violation = :log
-config.solid_queue.connects_to = { database: { writing: :queue } }  # generated default
 ```
 
-- YJIT is enabled automatically by Rails (7.2+) on Ruby versions that support
-  it. Keep it on. Set `config.yjit = false` only to debug.
-- Keep `config.active_job.enqueue_after_transaction_commit` at its default
-  (true in modern apps).
+- YJIT is enabled automatically by Rails 7.2+ where it's supported. Keep it
+  on.
 - Put secrets in encrypted credentials per environment
   (`bin/rails credentials:edit --environment production`). Use `ENV` only for
   values that differ between deployments of the same environment.
 
 ## Upgrading Rails or Ruby (procedure)
 
-1. Get the suite green, and add system tests for critical paths if they're
+1. Get the suite green, and add system specs for critical paths if they're
    missing.
 2. Upgrade one minor version at a time (7.1 → 7.2 → 8.0 → 8.1). Fix
-   deprecation warnings at each step first:
-   `config.active_support.deprecation = :raise` in test.
+   deprecations at each step first
+   (`config.active_support.deprecation = :raise` in test).
 3. `bundle update rails`, then `bin/rails app:update` and review each diff.
    Keep `config.load_defaults` at the old version, then flip the
-   `new_framework_defaults_*.rb` settings one by one.
-4. Bump `config.load_defaults` last, and delete the initializer.
-5. Upgrade Ruby separately from Rails: update `.ruby-version`, the Dockerfile,
-   and CI, run the suite, and check native gems.
-6. Deploy behind the usual process. Upgrades go out on their own, never
-   bundled with features.
+   `new_framework_defaults_*.rb` settings one at a time.
+4. Bump `config.load_defaults` last, and delete that initializer.
+5. Upgrade Ruby separately from Rails: update `.ruby-version`, the
+   Dockerfile, and CI.
+6. Ship each upgrade as its own deploy, never bundled with features.

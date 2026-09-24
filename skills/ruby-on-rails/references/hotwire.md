@@ -131,11 +131,56 @@ export default class extends Controller {
 - Validation errors come from the server re-render (422). Don't duplicate
   validations in JS.
 
+## ViewComponent: the UI building block
+
+Every reusable piece of UI is a component (Ruby class plus template),
+styled with Tailwind, rendered on the server, and working with Turbo and
+Stimulus as usual.
+
+```ruby
+# app/components/billing/invoice_row_component.rb
+module Billing
+  class InvoiceRowComponent < ViewComponent::Base
+    def initialize(invoice:)
+      @invoice = invoice
+    end
+
+    def status_classes = STATUS_CLASSES.fetch(@invoice.status)
+
+    STATUS_CLASSES = { "draft" => "bg-gray-100 text-gray-700", "sent" => "bg-blue-100 text-blue-800",
+                       "paid" => "bg-green-100 text-green-800", "void" => "bg-red-100 text-red-800" }.freeze
+  end
+end
+```
+
+```erb
+<%# app/components/billing/invoice_row_component.html.erb %>
+<%= tag.li id: dom_id(@invoice), class: "flex items-center justify-between py-3" do %>
+  <%= link_to @invoice.number, billing_invoice_path(@invoice), class: "font-medium" %>
+  <span class="rounded px-2 text-sm <%= status_classes %>"><%= @invoice.status.humanize %></span>
+<% end %>
+```
+
+- Render components with `render Billing::InvoiceRowComponent.new(invoice:)`,
+  or with `with_collection(@invoices)` for lists. Keep `dom_id` on the root
+  element so Turbo Streams and morphing can target it.
+- Pass everything in through `initialize`. Components never query the
+  database or read `Current`, which keeps them fast and easy to test with
+  `render_inline`.
+- Use slots (`renders_one`, `renders_many`) for layouts like cards, modals,
+  and tables.
+- A Stimulus controller that belongs to a component sits next to it
+  (`app/components/.../*_controller.js`), or stays generic in
+  `app/javascript/controllers`.
+- Lookbook (optional) gives you a living style guide from component
+  previews.
+
 ## Testing Hotwire
 
-- Request tests assert HTML and turbo-stream responses:
-  `assert_turbo_stream action: :append, target: "comments"`.
-- System tests (Capybara) cover the interactive flows that matter. Rely on
-  Capybara's waiting matchers, not `sleep`.
-- In model tests, check broadcasts with `assert_turbo_stream_broadcasts`
-  (from turbo-rails test helpers).
+- **Request specs** assert HTML and turbo-stream responses: check
+  `response.media_type == "text/vnd.turbo-stream.html"` and the
+  `<turbo-stream action="append" target="comments">` markup.
+- **Component specs** use `render_inline(Component.new(...))` with
+  Capybara matchers (`expect(page).to have_css(...)`).
+- **System specs** (Capybara) cover the interactive flows that matter. Rely
+  on Capybara's waiting matchers, not `sleep`.

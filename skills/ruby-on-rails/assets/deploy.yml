@@ -13,8 +13,13 @@ servers:
   #   cmd: bin/jobs
 
 proxy:
-  ssl: true
   host: <app.example.com>
+  ssl: true                          # Let's Encrypt (single host, no Cloudflare proxying)
+  # Behind Cloudflare (Full strict) or with multiple web hosts, use a Cloudflare Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true            # keep X-Forwarded-* (pair with the cloudflare-rails gem)
 
 registry:
   # Kamal 2.8+ can deploy without a remote registry for single-host setups.
@@ -28,6 +33,7 @@ env:
   secret:
     - RAILS_MASTER_KEY
     - DATABASE_PASSWORD
+    - SENTRY_DSN
   clear:
     SOLID_QUEUE_IN_PUMA: true       # run jobs inside Puma until a job role exists
     WEB_CONCURRENCY: 2              # Puma workers ≈ cores

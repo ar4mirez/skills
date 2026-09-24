@@ -1,0 +1,10 @@
+# app/domains/<domain>/package.yml (one per bounded context; needs packwerk-extensions for privacy)
+enforce_dependencies: true
+enforce_privacy: true
+public_path: app/domains/billing/public/   # only constants defined here may be referenced by other packages
+dependencies:
+  - "."                                    # shared kernel (root package: app/models, app/controllers, ...)
+  - app/domains/communications             # declare every domain whose public API this one calls
+metadata:
+  owner: "@acme/billing-team"
+  description: "Invoicing, subscriptions, payments, metered usage"

@@ -12,7 +12,8 @@
 #           params permit!
 #   medium  side effects (mail, jobs, HTTP) in after_save/create/update callbacks,
 #           non-RESTful routes (member/collection blocks) and controller actions,
-#           app/services sprawl, default_scope, unscoped Model.find(params[...]) in controllers,
+#           app/services sprawl, domains without package.yml / Packwerk / packwerk-extensions,
+#           default_scope, unscoped Model.find(params[...]) in controllers,
 #           obsolete frontend gems (turbolinks, rails-ujs, webpacker)
 #   low     fat models/controllers, update_attribute, legacy params.require.permit,
 #           Date.today/Time.now, Redis-backed gems on Rails 8+ (Solid stack covers them)
@@ -30,8 +31,8 @@ module RailsAudit
   OBSOLETE_GEMS = { "turbolinks" => "use turbo-rails", "rails-ujs" => "use Turbo (data-turbo-method/confirm)",
                     "webpacker" => "use importmap-rails or jsbundling-rails",
                     "sprockets-rails" => "Rails 8 defaults to Propshaft" }.freeze
-  FAT_MODEL_LINES = 300
-  FAT_CONTROLLER_LINES = 150
+  FAT_MODEL_LINES = 100        # Sandi Metz: classes ≤ 100 lines
+  FAT_CONTROLLER_LINES = 100
 
   Finding = Struct.new(:severity, :check, :location, :message) do
     def to_h
@@ -54,6 +55,7 @@ module RailsAudit
       check_routes
       check_controllers
       check_services
+      check_domains
       check_models
       check_code_smells
       check_gems
@@ -158,7 +160,7 @@ module RailsAudit
         lines = File.readlines(file)
         if lines.size > FAT_CONTROLLER_LINES
           add("low", "fat-controller", rel(file),
-              "#{lines.size} lines. Move logic into models/POROs; split custom actions into resource controllers.")
+              "#{lines.size} lines (≤ 100). Controllers call one domain operation per action; split custom actions into resource controllers.")
         end
 
         visibility = :public
@@ -179,26 +181,42 @@ module RailsAudit
           next unless line =~ /\b([A-Z][A-Za-z0-9:]*)\.find(?:_by)?[!(]?\s*\(?\s*params\b/
 
           add("medium", "unscoped-find", "#{rel(file)}:#{i + 1}",
-              "`#{Regexp.last_match(1)}.find(params...)` isn't scoped to the current user/account. " \
-              "Look records up through an association (e.g. Current.account.#{underscore_plural(Regexp.last_match(1))}.find).")
+              "`#{Regexp.last_match(1)}.find(params...)` isn't scoped to the current tenant. Use " \
+              "`#{Regexp.last_match(1)}.where(account: Current.account).find(...)` (or policy_scope) and authorize with Pundit.")
         end
       end
     end
 
-    def underscore_plural(const)
-      base = const.split("::").last.gsub(/([a-z\d])([A-Z])/, '\1_\2').downcase
-      base.end_with?("s") ? base : "#{base}s"
-    end
-
-    # --- app/services ----------------------------------------------------------
+    # --- app/services: operations belong inside a domain -----------------------
     def check_services
       files = Dir.glob(path("app", "services", "**", "*.rb"))
       return if files.empty?
 
-      named = files.count { |f| File.basename(f, ".rb").end_with?("_service") }
       add("medium", "services-directory", "app/services",
-          "#{files.size} file(s) (#{named} named *_service). Prefer domain methods on models or well-named " \
-          "POROs in app/models (e.g. Invoice::Payment#record) over procedure-named service objects.")
+          "#{files.size} file(s). Move each into its bounded context as an operation: " \
+          "app/domains/<domain>/operations/<verb_noun>.rb (e.g. Billing::PublishInvoice.call) returning ApplicationResult.")
+    end
+
+    # --- app/domains + Packwerk -------------------------------------------------
+    def check_domains
+      domains = Dir.glob(path("app", "domains", "*")).select { |d| File.directory?(d) }
+      return if domains.empty?
+
+      unless File.file?(path("packwerk.yml"))
+        add("medium", "packwerk-missing", "packwerk.yml",
+            "app/domains exists but Packwerk isn't configured. Boundaries aren't enforced: add packwerk + packwerk-extensions and run bin/packwerk init.")
+      end
+      domains.each do |dir|
+        next if File.file?(File.join(dir, "package.yml"))
+
+        add("medium", "domain-without-package", rel(dir),
+            "Domain has no package.yml. Add one with enforce_dependencies, enforce_privacy and public_path (see assets/package.yml).")
+      end
+      privacy = Dir.glob(path("app", "domains", "*", "package.yml")).any? { |f| File.read(f) =~ /enforce_privacy:\s*true/ }
+      if privacy && !(@facts[:gems] || []).include?("packwerk-extensions")
+        add("medium", "privacy-not-enforced", "Gemfile.lock",
+            "package.yml files set enforce_privacy, but packwerk-extensions isn't installed. Core Packwerk ignores privacy, so add the gem and `require: [packwerk-extensions]` in packwerk.yml.")
+      end
     end
 
     # --- models ----------------------------------------------------------------
@@ -207,7 +225,7 @@ module RailsAudit
         lines = File.readlines(file)
         if lines.size > FAT_MODEL_LINES
           add("low", "fat-model", rel(file),
-              "#{lines.size} lines. Extract cohesive concerns (capabilities) or POROs (processes).")
+              "#{lines.size} lines (Sandi Metz: ≤ 100). Keep models to data + invariants; move mutations into domain operations, queries into query objects.")
         end
         check_transaction_side_effects(file, lines)
         lines.each_with_index do |line, i|
@@ -238,7 +256,7 @@ module RailsAudit
 
         add("medium", "side-effect-in-transaction", "#{rel(file)}:#{i + 1}",
             "`#{m[1]} :#{m[2]}` triggers #{Regexp.last_match(0)} inside the transaction. Use " \
-            "#{m[1] == 'after_save' ? 'after_commit' : "#{m[1]}_commit"} (or an explicit model method called by the controller).")
+            "#{m[1] == 'after_save' ? 'after_commit' : "#{m[1]}_commit"} (or move the side effect into a domain operation).")
       end
     end
 

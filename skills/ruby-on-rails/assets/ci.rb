@@ -1,18 +1,18 @@
-# config/ci.rb (Rails 8.1 local CI). Run with: bin/ci
+# config/ci.rb (Rails 8.1 local CI, mirrors the GitHub Actions gate). Run with: bin/ci
 CI.run do
   step "Setup", "bin/setup --skip-server"
 
-  step "Style: Ruby", "bin/rubocop"
+  step "Style: RuboCop (rails, rspec, factory_bot, Metz metrics)", "bin/rubocop"
+  step "Boundaries: Packwerk", "bin/packwerk check"
 
-  step "Security: Gem audit", "bin/bundler-audit"
+  step "Security: Gem audit", "bundle exec bundle-audit check --update"
   step "Security: Importmap vulnerability audit", "bin/importmap audit"
-  step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  step "Security: Brakeman", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
-  step "Tests: Rails", "bin/rails test"
-  step "Tests: System", "bin/rails test:system"
+  step "Tests: RSpec", "bundle exec rspec --exclude-pattern 'spec/system/**/*_spec.rb'"
+  step "Tests: System", "bundle exec rspec spec/system"
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
-  # Optional: require a green local run before merge (gh extension install basecamp/gh-signoff)
   if success?
     step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"
   else

@@ -26,16 +26,30 @@ gem "image_processing", "~> 1.2"    # Active Storage variants
 
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 
+gem "view_component"                # added: UI components (Tailwind lives here)
+gem "pundit"                        # added: authorization policies
 gem "pagy"                          # added: pagination
 gem "mission_control-jobs"          # added: Solid Queue dashboard (mount behind admin auth)
-gem "strong_migrations"             # added: blocks unsafe migrations (Postgres/MySQL)
+gem "strong_migrations"             # added: blocks unsafe migrations
+gem "sentry-ruby"                   # added: error tracking (Ruby, jobs)
+gem "sentry-rails"
+gem "cloudflare-rails"              # added when behind Cloudflare: correct request.remote_ip
+# gem "datadog", require: "datadog/auto_instrument"   # APM (or: gem "newrelic_rpm")
+# gem "searchkick"; gem "opensearch-ruby"             # when search becomes a product feature
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "rspec-rails"                 # added: test framework (rails new --skip-test)
+  gem "factory_bot_rails"           # added
+  gem "shoulda-matchers"            # added: one-line association/validation specs
+  gem "packwerk", require: false    # added: domain boundaries
+  gem "packwerk-extensions", require: false   # added: privacy (public API) checker
   gem "bundler-audit", require: false
   gem "brakeman", require: false
-  gem "rubocop-rails-omakase", require: false
-  gem "prosopite"                   # added: N+1 detection (or rely on strict_loading)
+  gem "rubocop-rails", require: false          # added (replaces rubocop-rails-omakase)
+  gem "rubocop-rspec", require: false          # added
+  gem "rubocop-factory_bot", require: false    # added
+  gem "parallel_tests"              # added: parallel RSpec
 end
 
 group :development do
@@ -50,4 +64,4 @@ group :test do
 end
 
 # Deliberately NOT here: redis, sidekiq, devise, dry-*, interactor, trailblazer,
-# draper, aasm, paranoia/discard, annotate. See references/stack-and-setup.md.
+# draper, aasm, a React/Vue SPA. See references/stack-and-setup.md.

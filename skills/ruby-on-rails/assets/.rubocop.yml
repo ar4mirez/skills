@@ -1,0 +1,56 @@
+# .rubocop.yml: rubocop-rails + rubocop-rspec + rubocop-factory_bot, with Sandi Metz's rules.
+# Zero warnings in CI. Break a rule only with an inline disable plus a comment saying why.
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-factory_bot
+
+AllCops:
+  NewCops: enable
+  TargetRubyVersion: 3.4
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "db/migrate/**/*"          # migrations are data, not design
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+
+# --- Sandi Metz's rules ----------------------------------------------------------
+Metrics/ClassLength:             # 1. classes ≤ 100 lines
+  Max: 100
+  CountAsOne: [array, hash, heredoc, method_call]
+Metrics/ModuleLength:
+  Max: 100
+  CountAsOne: [array, hash, heredoc, method_call]
+Metrics/MethodLength:            # 2. methods ≤ 5 lines
+  Max: 5
+  CountAsOne: [array, hash, heredoc, method_call]
+Metrics/ParameterLists:          # 3. ≤ 4 parameters (keywords count)
+  Max: 4
+  CountKeywordArgs: true
+Metrics/AbcSize:
+  Max: 17
+Metrics/BlockLength:
+  Exclude:
+    - "spec/**/*"
+    - "config/**/*"
+    - "lib/tasks/**/*"
+# 4. one instance variable per controller action is enforced in review.
+
+# --- House style -------------------------------------------------------------------
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+Style/Documentation:
+  Enabled: false
+Layout/IndentationConsistency:
+  EnforcedStyle: indented_internal_methods   # private methods indented under `private`
+
+# --- RSpec ---------------------------------------------------------------------------
+RSpec/ExampleLength:
+  Max: 10
+  CountAsOne: [array, hash, heredoc, method_call]
+RSpec/MultipleExpectations:
+  Max: 3
+RSpec/NestedGroups:
+  Max: 3

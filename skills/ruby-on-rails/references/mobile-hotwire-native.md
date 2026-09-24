@@ -6,6 +6,11 @@ configuration and bridge references), plus turbo-rails
 
 ## The opinion
 
+> **Naming:** "Turbo Native" is now **Hotwire Native** (iOS and Android),
+> and "Strada" is now **Bridge Components**, built into Hotwire Native.
+> Older articles use the old names. Use the new libraries
+> (`hotwire-native-ios`, `dev.hotwire:*`, `@hotwired/hotwire-native-bridge`).
+
 For a Rails team, **Hotwire Native is the default way to ship iOS and Android
 apps.** A thin native shell (Swift or Kotlin) wraps your Rails-rendered
 screens in native navigation, with native transitions, tabs, and modals. You

@@ -29,7 +29,8 @@ class RailsAuditTests(unittest.TestCase):
         checks = {f["check"] for f in findings}
         for expected in ("unindexed-foreign-key", "rescue-exception", "non-restful-route", "non-restful-action",
                          "unscoped-find", "services-directory", "default-scope", "side-effect-in-transaction",
-                         "update-attribute", "callback-recursion", "legacy-strong-params", "time-zone", "redis-dependency"):
+                         "update-attribute", "callback-recursion", "legacy-strong-params", "time-zone", "redis-dependency",
+                         "packwerk-missing", "domain-without-package"):
             self.assertIn(expected, checks)
 
     def test_polymorphic_index_counts_and_indexed_fk_not_flagged(self):
@@ -42,6 +43,21 @@ class RailsAuditTests(unittest.TestCase):
         actions = [f["message"] for f in findings if f["check"] == "non-restful-action"]
         self.assertEqual(len(actions), 1)
         self.assertIn("publish", actions[0])
+
+    def test_privacy_without_packwerk_extensions(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "config").mkdir()
+            (root / "config" / "application.rb").write_text("# app\n")
+            (root / "packwerk.yml").write_text("include: []\n")
+            (root / "Gemfile.lock").write_text("GEM\n  specs:\n    rails (8.1.4)\n    packwerk (3.3.1)\n")
+            pkg = root / "app" / "domains" / "billing"
+            pkg.mkdir(parents=True)
+            (pkg / "package.yml").write_text("enforce_privacy: true\n")
+            out = json.loads(run(AUDIT, root, "--json", "--fail-on", "none").stdout)
+        checks = {f["check"] for f in out["findings"]}
+        self.assertIn("privacy-not-enforced", checks)
+        self.assertNotIn("packwerk-missing", checks)
 
     def test_fail_on_none_exits_zero(self):
         self.assertEqual(run(AUDIT, SAMPLE, "--fail-on", "none").returncode, 0)

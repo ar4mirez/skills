@@ -30,8 +30,9 @@ methods named after the domain.
 - **Frozen, meaningful constants:** `STATUSES = %w[ draft sent paid ].freeze`.
 - **Enumerable fluency:** `sum`, `index_by`, `group_by`, `partition`,
   `each_with_object`, `filter_map`, `tally`, `each_slice`.
-- **Composition via modules and small objects** rather than deep inheritance.
-  `ApplicationRecord` is the only base class most apps need.
+- **Composition via small objects** (operations, forms, queries, value
+  objects) rather than deep inheritance. Beyond the framework's own base
+  classes, `ApplicationResult` is the only shared abstraction.
 
 ## Avoid in application code
 
@@ -53,13 +54,23 @@ methods named after the domain.
 
 ## Style
 
-`rubocop-rails-omakase` is the baseline. Don't bikeshed beyond it; add a cop
-only after repeated review comments. Omakase conventions:
-- Put spaces inside array brackets: `%w[ a b ]`, `[ :id ]`.
-- Indent private methods one level under `private`.
+The linters are `rubocop-rails`, `rubocop-rspec`, and `rubocop-factory_bot`,
+with Sandi Metz's metrics enforced (`assets/.rubocop.yml`):
+- classes of 100 lines or fewer;
+- methods of 5 lines or fewer (arrays, hashes, and heredocs count as one
+  line);
+- 4 parameters or fewer.
+
+CI runs with zero warnings allowed. Beyond the config, follow these
+conventions:
 - Use double-quoted strings.
-- Order a class as: constants, includes, associations, validations, callbacks,
-  scopes, then public methods, then private methods.
+- Indent private methods one level under `private`.
+- Order a class as: constants, includes, associations, validations,
+  callbacks, scopes, then public methods, then private methods.
+- Name operations VerbNoun (`Billing::RecordPayment`), components
+  NounComponent, and policies ModelPolicy.
+- Don't bikeshed beyond the config. Add a cop only after repeated review
+  comments.
 
 ## Gem hygiene
 

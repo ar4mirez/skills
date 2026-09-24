@@ -1,135 +1,194 @@
 # Testing
 
-Default to **Minitest + fixtures**, the Rails default: fast, zero-config, and
-readable. If the app already uses RSpec + FactoryBot, write RSpec in the same
-style. The principles below apply either way.
+Default to **RSpec + FactoryBot**, with Capybara system specs for Hotwire
+flows, `rubocop-rspec` and `rubocop-factory_bot` for spec style, and
+shoulda-matchers only for one-line association and validation specs. If an
+existing app uses Minitest + fixtures, write Minitest in its style. Never mix
+the two in one app.
+
+Testing is part of design. If an operation is hard to test, its interface is
+wrong: too many collaborators, hidden `Current` reads, or side effects that
+aren't injected.
+
+## Setup
+
+```bash
+rails new acme --database=postgresql --css=tailwind --skip-test   # no Minitest
+bundle add rspec-rails factory_bot_rails shoulda-matchers --group=development,test
+bundle add capybara selenium-webdriver webmock --group=test
+bundle add rubocop-rspec rubocop-factory_bot --group=development --require=false
+bin/rails generate rspec:install
+```
+
+```ruby
+# spec/rails_helper.rb (additions)
+require "webmock/rspec"
+RSpec.configure do |config|
+  config.include FactoryBot::Syntax::Methods
+  config.include ActiveSupport::Testing::TimeHelpers
+  config.include ActiveJob::TestHelper
+  config.filter_rails_from_backtrace!
+end
+Shoulda::Matchers.configure { |c| c.integrate { |w| w.test_framework(:rspec); w.library(:rails) } }
+WebMock.disable_net_connect!(allow_localhost: true)
+```
+
+Mirror the app's layout in `spec/`: `spec/domains/billing/operations/record_payment_spec.rb`,
+`spec/requests/billing/checkouts_spec.rb`, `spec/components/...`,
+`spec/system/...`, and `spec/policies/...`.
 
 ## What to test, at which level
 
-| Level | Tests | Share of suite |
-|---|---|---|
-| **Model** (`test/models`) | Domain behavior: methods, scopes, validations that encode rules, POROs | Most |
-| **Controller/request** (`test/controllers`, `ActionDispatch::IntegrationTest`) | The HTTP contract: status, redirects, auth and tenant scoping, params, turbo-stream responses | Some |
-| **System** (`test/system`, Capybara + Selenium/Cuprite) | Critical user journeys end to end: signup, checkout, the core workflow | Few (roughly 5–20) |
-| **Job/Mailer** | That the job calls the model method; mailer content and recipients | Few |
+| Level | Location | Tests | Share |
+|---|---|---|---|
+| **Operation** | `spec/domains/<d>/operations` | Every success and failure branch of a domain operation, its Result, and the side effects it enqueues | Most |
+| **Model** | `spec/domains/<d>/models` | Invariants, scopes, predicates, and DB constraints (one-liners via shoulda) | Some |
+| **Form/Query** | `spec/domains/<d>/{forms,queries}` | Validation rules, and the rows returned | Some |
+| **Policy** | `spec/policies` | Each role allowed or denied, plus `Scope` | Some |
+| **Request** | `spec/requests` | The HTTP contract: status, redirects, tenant isolation (404 for another account), `params.expect`, turbo-stream responses | Some |
+| **Component** | `spec/components` | `render_inline(Component.new(...))` output for each variant | Some |
+| **System** | `spec/system` | 5–20 critical journeys end to end (signup, checkout, the core workflow) | Few |
 
-Don't write tests that restate framework behavior (`validates presence`
-without a rule behind it, `belongs_to` existence), or view tests for markup
-details.
+Don't write controller specs (use request specs), view specs, or specs that
+restate the framework.
 
-## Fixtures: a small, named world
+## Factories
 
-```yaml
-# test/fixtures/accounts.yml
-acme:
-  name: Acme Inc.
+```ruby
+# spec/factories/billing/invoices.rb
+FactoryBot.define do
+  factory :billing_invoice, class: "Billing::Invoice" do
+    account
+    sequence(:number) { "INV-#{_1.to_s.rjust(4, '0')}" }
+    status { :draft }
 
-# test/fixtures/users.yml
-david:
-  account: acme
-  email_address: david@acme.test
-  password_digest: <%= BCrypt::Password.create("secret", cost: 4) %>
-  role: owner
+    trait :sent do
+      status { :sent }
+      issued_on { Date.current }
+      due_on { 30.days.from_now.to_date }
+    end
 
-# test/fixtures/invoices.yml
-acme_draft:
-  account: acme
-  customer: globex
-  number: INV-001
-  status: draft
+    trait :with_line_item do
+      after(:create) { |invoice| create(:billing_line_item, invoice:, amount_cents: 10_000) }
+    end
+  end
+end
 ```
 
-- Name fixtures like characters in a story (`acme_draft`, `overdue_sent`), so
-  tests read as scenarios.
-- Keep them minimal. Add a fixture when a test needs a new situation, not "just
-  in case."
-- Build rare variations inline with `invoices(:acme_draft).dup.tap { ... }`,
-  or with `update!` in the test.
-- Fixtures load once per run inside transactions, which is why they're much
-  faster than factories.
+- Keep factories minimal and valid: required attributes only. Build
+  variations with **traits**.
+- Prefer `build` or `build_stubbed` wherever persistence doesn't matter.
+  `create` only for queries, constraints, and request or system specs.
+- Keep associations explicit in the spec when they matter to the behavior
+  (`create(:billing_invoice, account:)`).
+- Don't nest `after(:create)` callbacks that build large graphs. Slow suites
+  start there.
 
 ## Examples
 
 ```ruby
-class InvoiceTest < ActiveSupport::TestCase
-  test "paying the full balance marks the invoice paid" do
-    invoice = invoices(:acme_sent)
+# spec/domains/billing/operations/record_payment_spec.rb
+RSpec.describe Billing::RecordPayment do
+  subject(:result) { described_class.call(invoice:, amount_cents:) }
 
-    invoice.pay(amount: invoice.total)
+  let(:invoice) { create(:billing_invoice, :sent, :with_line_item) }
 
-    assert invoice.reload.paid?
+  context "when the payment covers the balance" do
+    let(:amount_cents) { 10_000 }
+
+    it "records the payment and marks the invoice paid" do
+      expect(result).to be_success
+      expect(invoice.reload).to be_paid
+    end
   end
 
-  test "overdue includes only sent invoices past due" do
-    travel_to Date.new(2026, 10, 1) do
-      assert_includes Invoice.overdue, invoices(:acme_sent_due_september)
-      assert_not_includes Invoice.overdue, invoices(:acme_draft)
+  context "when the invoice isn't payable" do
+    let(:invoice) { create(:billing_invoice) }   # draft
+    let(:amount_cents) { 10_000 }
+
+    it "fails without writing" do
+      expect { result }.not_to change(Billing::Payment, :count)
+      expect(result.errors).to include("Invoice isn't payable")
     end
   end
 end
 ```
 
 ```ruby
-class InvoicesControllerTest < ActionDispatch::IntegrationTest
-  setup { sign_in_as users(:david) }
+# spec/requests/billing/invoices_spec.rb
+RSpec.describe "Billing invoices" do
+  let(:user) { create(:user) }
 
-  test "cannot see another account's invoice" do
-    get invoice_url(invoices(:globex_sent))
-    assert_response :not_found
+  before { sign_in_as(user) }
+
+  it "hides other accounts' invoices" do
+    other = create(:billing_invoice)
+    get billing_invoice_path(other)
+    expect(response).to have_http_status(:not_found)
   end
 
-  test "invalid invoice re-renders with 422" do
-    post invoices_url, params: { invoice: { number: "" } }
-    assert_response :unprocessable_entity
+  it "re-renders an invalid checkout with 422" do
+    post billing_checkout_path, params: { billing_checkout_form: { plan_id: "" } }
+    expect(response).to have_http_status(:unprocessable_entity)
   end
 end
 ```
 
 ```ruby
-class SendInvoiceTest < ApplicationSystemTestCase
-  test "owner sends a draft invoice" do
-    sign_in_as users(:david)
-    visit invoice_url(invoices(:acme_draft))
-    click_on "Send invoice"
-    assert_text "Invoice sent."
+# spec/system/checkout_spec.rb
+RSpec.describe "Checkout", type: :system do
+  before { driven_by :selenium, using: :headless_chrome }
+
+  it "subscribes to a plan" do
+    sign_in_as create(:user)
+    visit new_billing_checkout_path
+    select "Pro", from: "Plan"
+    click_on "Subscribe"
+    expect(page).to have_text("You're subscribed")
   end
 end
 ```
 
-- Structure each test as arrange / act / assert, separated by blank lines,
-  with one behavior per test. The test name states the rule.
-- Use `travel_to` for time, and `assert_enqueued_with(job: ...)` or
-  `perform_enqueued_jobs` for jobs.
-- Use `assert_emails 1 { ... }` and `ActionMailer::Base.deliveries` for mail.
-- For external HTTP, use WebMock with explicit stubs. Put a thin client object
-  behind the model so tests stub at one seam. Use VCR only for complex
-  third-party APIs.
-- The authentication generator gives you `sign_in_as`, via a
-  `SessionTestHelper`, in modern Rails. If it's missing, add a helper that
-  posts to `session_url`.
+Conventions (enforced by rubocop-rspec):
+- Use `describe` for the class or method, and `context` for the condition
+  ("when...", "with...").
+- Each example states one behavior. Use `subject` and `let` for setup, and
+  avoid `let!` unless eager creation is the point.
+- Use `travel_to` for time, `have_enqueued_job(Billing::ChargeSubscriptionJob)`
+  and `have_enqueued_mail` for side effects, and `perform_enqueued_jobs` when
+  the job's effect matters.
+- For external HTTP, use WebMock stubs at one seam: the domain's client
+  object. Keep VCR only for complex third-party APIs, and filter secrets.
+- `sign_in_as` is a small request/system helper that posts to the session
+  path (or sets the session cookie) for the Rails 8 authentication scaffold.
+  Put it in `spec/support/authentication_helpers.rb`.
 
 ## Keeping the suite fast
 
-- Run tests in parallel (`parallelize(workers: :number_of_processors)`, which
-  is the default).
-- Use fixtures, not factories. If using factories, prefer `build_stubbed` or
-  `build`.
-- Don't hit the network, and don't `sleep`.
-- Keep system tests few, and on headless Chrome.
-- Aim to keep the full model and controller suite under about a minute on a
-  laptop.
+- Run in parallel with the `parallel_tests` gem (`bin/parallel_rspec`),
+  because Rails' built-in `parallelize` is Minitest-only. Allow no network
+  and no `sleep`, and keep system specs few, on headless Chrome.
+- `build_stubbed` over `create`, and use `let` lazily.
+- Watch `rspec --profile 10`. Slow examples usually mean factory graphs.
 
-## CI
+## Quality gate (CI)
 
-Rails 8.1 local CI lives in `config/ci.rb` (see `assets/ci.rb`) and runs with
-`bin/ci`. It covers setup, RuboCop, bundler-audit, importmap audit, Brakeman,
-tests, system tests, and seeds. Keep the generated GitHub Actions workflow as
-well, or use `gh signoff` so passing local CI gates merges.
+Zero warnings, with every step blocking merge:
+1. `bin/rubocop` (`rubocop-rails`, `rubocop-rspec`, `rubocop-factory_bot`,
+   and the Sandi Metz metrics, see `assets/.rubocop.yml`)
+2. `bin/brakeman --no-pager --exit-on-warn --exit-on-error`
+3. `bundle exec bundle-audit check --update` (and `bin/importmap audit`)
+4. `bin/packwerk check` (boundaries, where `package_todo.yml` may only
+   shrink)
+5. `bundle exec rspec`, plus system specs
 
-Test Hotwire Native apps on the Rails side. Request tests with a native user
-agent assert native-specific behavior:
+The GitHub Actions workflow is in `assets/github-ci.yml`. The same steps also
+run locally through `config/ci.rb` / `bin/ci` (`assets/ci.rb`).
+
+Hotwire Native: request specs with a native user agent assert native-specific
+rendering:
 
 ```ruby
-get invoice_url(invoice), headers: { "User-Agent" => "Hotwire Native iOS" }
-assert_select "nav.web-only", count: 0
+get project_path(project), headers: { "User-Agent" => "Hotwire Native iOS" }
+expect(response.body).not_to include("web-navbar")
 ```

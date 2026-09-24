@@ -16,8 +16,11 @@ including automatic TLS via Let's Encrypt.
   deploys.
 - **Roles:** `web` runs Puma plus Thruster. Add a `job` role (`cmd:
   bin/jobs`) when job load grows; until then, keep `SOLID_QUEUE_IN_PUMA=true`.
+- **Hosting:** Hetzner, DigitalOcean, or AWS EC2, as plain VMs or bare
+  metal. Kamal doesn't care which.
 - **Accessories:** run the database on the same host or its own via Kamal
-  accessories, or use a managed PostgreSQL. Managed is worth it once data
+  accessories, or use a managed PostgreSQL. PgBouncer and OpenSearch can
+  also run as accessories on their own hosts. Managed is worth it once data
   matters more than the savings.
 - **Commands:**
   - `kamal deploy` deploys;
@@ -39,24 +42,61 @@ monolith unless a platform team already runs it.
   `/jobs` behind admin authentication. Watch failed jobs and queue latency.
 - **Solid Cache:** set a size limit (`max_size`) in `config/cache.yml`. It's
   disk-backed, so it can be large.
-- **Solid Cable:** messages are kept for a day by default, and it polls the
-  database. That's fine for typical apps; move to Redis-backed Action Cable
-  only at very high fan-out.
+- **Solid Cable:** this is the production real-time adapter. Messages are
+  kept for a day by default, and it polls the database. Action Cable's
+  `async` adapter is for development and test only. Move to a Redis- or
+  KeyDB-backed cable only at very high fan-out, and measure first.
 
 ## Observability
 
-- **Structured events (Rails 8.1):** use
-  `Rails.event.notify("invoice.paid", invoice_id:, amount:)` with
-  `Rails.event.set_context(request_id:, account_id:)`, plus a subscriber that
-  emits JSON to your log pipeline. Prefer this over ad-hoc `Rails.logger.info`
-  strings for business events.
-- **Logs:** use one line per request, with request id and user or account ids
-  tagged (`config.log_tags = [:request_id]`), in JSON in production.
-- **Errors:** use the Rails error reporter (`Rails.error.report`,
-  `Rails.error.handle`) with one provider (Sentry, Honeybadger, AppSignal),
-  or self-hosted `solid_errors` for small apps.
-- **APM:** watch p95 latency per endpoint, queue latency, and database time.
-  Alert on symptoms (error rate, latency, queue backlog), not on CPU.
+- **Errors: Sentry,** via `sentry-ruby` and `sentry-rails`, covering Ruby,
+  background jobs, and the browser (`@sentry/browser` via importmap, pinned).
+  Hook it into the Rails error reporter, so `Rails.error.report` and
+  `Rails.error.handle` flow to Sentry. Set `release` to the git SHA (the
+  Kamal `KAMAL_VERSION`), and filter PII with `send_default_pii = false` plus
+  `filter_parameters`.
+- **APM: Datadog or New Relic (pick one).** Use the `datadog` gem (2.x, the
+  successor to `ddtrace`) with `Datadog.configure { |c| c.tracing.instrument
+  :rails; c.tracing.instrument :active_record }` plus the Datadog agent as a
+  Kamal accessory, or `newrelic_rpm` with `config/newrelic.yml`. Use it for
+  slow-query traces, memory and allocation anomalies, and p95 per endpoint.
+- **Structured events (Rails 8.1):** `Rails.event.notify("billing.payment_recorded",
+  invoice_id:, amount_cents:)` with `Rails.event.set_context(request_id:,
+  account_id:)`. Subscribers forward the events to logs or APM. Use these for
+  business events instead of ad-hoc log strings.
+- **Logs:** use JSON in production, one line per request, tagged with
+  `request_id`, user, and account.
+- **Alerts:** alert on symptoms (error rate, p95 latency, Solid Queue latency
+  and failed jobs, database saturation), not on CPU.
+
+## Cloudflare in front of Kamal
+
+Cloudflare provides DNS, CDN and edge caching for assets, image
+optimization, WAF, and DDoS protection. To configure it correctly:
+- **SSL mode: Full (strict).** Never use Flexible, which leaves plain HTTP
+  between Cloudflare and your server.
+- **Certificates:** with Cloudflare proxying (the orange cloud), and
+  *especially* with more than one web host, use a **Cloudflare Origin CA
+  certificate** through Kamal's custom-certificate support instead of Let's
+  Encrypt:
+  ```yaml
+  proxy:
+    host: app.example.com
+    ssl:
+      certificate_pem: CERTIFICATE_PEM     # secret names, from .kamal/secrets
+      private_key_pem: PRIVATE_KEY_PEM
+    forward_headers: true                 # kamal-proxy drops X-Forwarded-* with ssl unless enabled
+  ```
+- **Real client IP:** add the `cloudflare-rails` gem, which trusts Cloudflare's
+  IP ranges, so `request.remote_ip` (used by `rate_limit`, logs, and Sentry) is
+  the visitor's IP, not Cloudflare's.
+- **Caching:** let Cloudflare cache fingerprinted assets (`/assets/*`, which
+  are immutable). Never cache HTML for signed-in users. Rails sends
+  `Cache-Control: private` by default, so keep it that way.
+- **WebSockets** (Solid Cable / Turbo Streams) work through Cloudflare. Check
+  the plan's connection timeouts for long-lived sockets.
+- Optionally, lock the origin firewall to Cloudflare IPs plus your SSH
+  source.
 
 ## Security checklist
 
