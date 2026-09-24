@@ -1,0 +1,15 @@
+# Eval workspaces (agentskills.io eval loop) — generated, never committed
+*-workspace/
+**/iteration-*/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

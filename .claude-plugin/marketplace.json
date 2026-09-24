@@ -1,0 +1,11 @@
+{
+  "name": "ar4mirez-skills",
+  "owner": {
+    "name": "Angel Ramirez"
+  },
+  "metadata": {
+    "description": "Portable Agent Skills by ar4mirez, following the agentskills.io specification",
+    "version": "1.0.0"
+  },
+  "plugins": []
+}

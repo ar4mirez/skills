@@ -1,0 +1,33 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  skills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate skills (spec + repo conventions)
+        run: python3 scripts/validate_skills.py
+
+      - name: Validate with reference skills-ref
+        run: |
+          pip install --quiet "skills-ref @ git+https://github.com/agentskills/agentskills#subdirectory=skills-ref"
+          for d in skills/*/; do skills-ref validate "$d"; done
+
+      - name: Test bundled scripts
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Marketplace manifest is valid JSON
+        run: python3 -m json.tool .claude-plugin/marketplace.json > /dev/null

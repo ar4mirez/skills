@@ -1,0 +1,12 @@
+{
+  "skill_name": "skill-name",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "A realistic user message with concrete context (paths, names, constraints).",
+      "expected_output": "Human-readable description of what success looks like.",
+      "files": [],
+      "assertions": []
+    }
+  ]
+}
