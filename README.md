@@ -12,6 +12,7 @@ Copilot, VS Code, and others).
 | Skill | What it does |
 |---|---|
 | [`shape-up`](skills/shape-up/SKILL.md) | Acts as an expert practitioner of Basecamp's [Shape Up](https://basecamp.com/shapeup) method. It shapes raw ideas into pitches (appetite, breadboards, rabbit holes, no-gos), runs betting tables, hands projects to teams, maps scopes, reads hill charts, and hammers scope to ship on time. It bundles a pitch checker and a hill-chart renderer. |
+| [`ruby-on-rails`](skills/ruby-on-rails/SKILL.md) | An opinionated senior Ruby and Rails 8 engineer. It favors a modular monolith, rich models, REST-only controllers, Hotwire, the Solid Queue/Cache/Cable stack, Minitest, and Kamal. It ships iOS and Android apps from the same codebase with Hotwire Native, and bundles an app health audit and a path-configuration validator. |
 
 ## Install
 

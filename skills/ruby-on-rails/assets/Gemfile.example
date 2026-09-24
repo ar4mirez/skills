@@ -1,0 +1,53 @@
+# Opinionated baseline for a new Rails 8.1 app.
+# Start from `rails new` output and add only the lines marked "added".
+source "https://rubygems.org"
+
+ruby file: ".ruby-version"          # e.g. 4.0.7
+
+gem "rails", "~> 8.1.4"
+gem "propshaft"
+gem "pg", "~> 1.6"                  # or: gem "sqlite3", ">= 2.1" for single-server apps
+gem "puma", ">= 5.0"
+gem "importmap-rails"
+gem "turbo-rails"
+gem "stimulus-rails"
+gem "tailwindcss-rails"
+gem "jbuilder"                      # only if you render JSON; remove otherwise
+gem "bcrypt", "~> 3.1.7"            # authentication generator
+
+gem "solid_cache"
+gem "solid_queue"
+gem "solid_cable"
+
+gem "bootsnap", require: false
+gem "kamal", require: false
+gem "thruster", require: false
+gem "image_processing", "~> 1.2"    # Active Storage variants
+
+gem "tzinfo-data", platforms: %i[ windows jruby ]
+
+gem "pagy"                          # added: pagination
+gem "mission_control-jobs"          # added: Solid Queue dashboard (mount behind admin auth)
+gem "strong_migrations"             # added: blocks unsafe migrations (Postgres/MySQL)
+
+group :development, :test do
+  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
+  gem "bundler-audit", require: false
+  gem "brakeman", require: false
+  gem "rubocop-rails-omakase", require: false
+  gem "prosopite"                   # added: N+1 detection (or rely on strict_loading)
+end
+
+group :development do
+  gem "web-console"
+  gem "rack-mini-profiler"          # added: per-request SQL/time badge
+end
+
+group :test do
+  gem "capybara"
+  gem "selenium-webdriver"
+  gem "webmock"                     # added: no real HTTP in tests
+end
+
+# Deliberately NOT here: redis, sidekiq, devise, dry-*, interactor, trailblazer,
+# draper, aasm, paranoia/discard, annotate. See references/stack-and-setup.md.

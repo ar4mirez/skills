@@ -1,0 +1,37 @@
+{
+  "settings": {
+    "feature_flags": []
+  },
+  "rules": [
+    {
+      "patterns": [
+        ".*"
+      ],
+      "properties": {
+        "context": "default",
+        "pull_to_refresh_enabled": true
+      }
+    },
+    {
+      "patterns": [
+        "/new$",
+        "/edit$"
+      ],
+      "properties": {
+        "context": "modal",
+        "pull_to_refresh_enabled": false
+      }
+    },
+    {
+      "patterns": [
+        "/session/new$",
+        "/sign_in$"
+      ],
+      "properties": {
+        "context": "modal",
+        "modal_dismiss_gesture_enabled": false,
+        "pull_to_refresh_enabled": false
+      }
+    }
+  ]
+}

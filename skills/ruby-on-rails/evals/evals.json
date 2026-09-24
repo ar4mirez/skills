@@ -1,0 +1,63 @@
+{
+  "skill_name": "ruby-on-rails",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm starting a B2B invoicing SaaS in Rails. Small team (me + 1 dev), want to deploy on a couple of Hetzner boxes. What stack should I use? I was thinking Rails API + React, Sidekiq + Redis, Devise, RSpec, and deploying to Kubernetes.",
+      "expected_output": "An opinionated push toward Rails 8 defaults: a full-stack Rails monolith with Hotwire instead of API+React; Solid Queue/Cache/Cable instead of Sidekiq+Redis; the built-in authentication generator instead of Devise; Kamal 2 instead of Kubernetes; PostgreSQL. Each swap comes with a short reason tied to team size and simplicity, and ends with a concrete `rails new` command and first steps.",
+      "files": [],
+      "assertions": [
+        "Recommends a full-stack Rails monolith with Hotwire (Turbo/Stimulus) over a separate React SPA for this team",
+        "Recommends Solid Queue (and Solid Cache/Cable) instead of adding Sidekiq + Redis",
+        "Recommends Kamal (2) over Kubernetes for deploying to their own servers",
+        "Mentions the Rails 8 authentication generator as the default over Devise (Devise acceptable only for OAuth-heavy needs)",
+        "Gives a concrete `rails new` command (e.g. --database=postgresql) and first steps",
+        "Explains trade-offs briefly rather than just listing tools"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can you review our invoices code? It's in evals/files/sample_app (a Rails 8.1 app). Tell me what to fix first.",
+      "expected_output": "A severity-ranked review: an IDOR from unscoped Invoice.find; rescue Exception; mail sent from after_save inside the transaction plus update_attribute in a callback; a non-RESTful publish action and member route that should become a resource controller; a service object that belongs on the model; default_scope; missing indexes on invoices.customer_id and comments.author_id; params.require.permit → params.expect; Time.now; Sidekiq/Redis unnecessary on Rails 8. Includes concrete code for the top fixes.",
+      "files": ["evals/files/sample_app"],
+      "assertions": [
+        "Flags the unscoped Invoice.find(params[:id]) as an authorization/IDOR risk and shows a scoped lookup",
+        "Flags `rescue Exception`",
+        "Flags the after_save callback sending mail inside the transaction and suggests after_commit or an explicit method",
+        "Recommends replacing the custom `publish` action/member route with a resource controller (e.g. Invoices::PublicationsController#create)",
+        "Recommends moving InvoicePublisherService logic onto the model or a domain PORO",
+        "Flags default_scope",
+        "Flags the missing indexes on invoices.customer_id and/or comments.author_id",
+        "Orders findings by severity with security/data issues first"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our Rails app is a project tracker used mostly on phones. Customers keep asking for an App Store and Play Store app. We're 3 Rails devs, zero iOS/Android experience. What's the fastest sane path?",
+      "expected_output": "Recommends Hotwire Native: thin Swift and Kotlin shells around the existing Rails screens, with a server-served, versioned path configuration, `hotwire_native_app?` to hide web chrome, `recede_or_redirect_to` for modal flows, and bridge components for a few native touches, going fully native only where needed. It explains why this beats rewriting in React Native/Flutter or a JSON API for a Rails-only team, and gives concrete first steps.",
+      "files": [],
+      "assertions": [
+        "Recommends Hotwire Native as the primary approach",
+        "Explains the progression: web screens → bridge components → native screens only where needed",
+        "Mentions path configuration (ideally versioned and served by Rails) for navigation rules such as modals",
+        "Mentions Rails-side adaptations such as hotwire_native_app? and/or recede_or_redirect_to",
+        "Explains why not React Native/Flutter or a separate API for this team",
+        "Gives concrete first steps for both iOS and Android"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Our /projects page takes 3 seconds. The view shows each project with its owner's name, the count of open tasks, and the last comment. There are about 400 projects per account. How do I fix it?",
+      "expected_output": "Measure first (rack-mini-profiler, logs, EXPLAIN). Likely fixes: N+1 on owner and comments solved with includes/preload in the controller query; a counter cache or a grouped count for open tasks instead of per-row COUNT; a latest-comment association or subquery; pagination (pagy); indexes on the foreign keys and filter columns; then fragment or collection caching. Also strict_loading to prevent regressions.",
+      "files": [],
+      "assertions": [
+        "Recommends measuring first (e.g. rack-mini-profiler, query logs, EXPLAIN) before changing code",
+        "Identifies N+1 queries and fixes with includes/preload in the controller or scope, not the view",
+        "Addresses the per-project task count with a counter cache or a single grouped query",
+        "Recommends pagination for 400 rows",
+        "Mentions indexes on foreign keys/filtered columns",
+        "Mentions strict_loading or an N+1 detector to prevent regressions, or caching after the query fixes"
+      ]
+    }
+  ]
+}

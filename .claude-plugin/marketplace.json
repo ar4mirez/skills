@@ -9,6 +9,15 @@
   },
   "plugins": [
     {
+      "name": "ruby-on-rails",
+      "description": "Opinionated Ruby + Rails 8 expert: simple, modular, testable web apps with Hotwire, the Solid stack and Kamal, plus iOS/Android apps via Hotwire Native",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/ruby-on-rails"
+      ]
+    },
+    {
       "name": "shape-up",
       "description": "Expert practitioner of Basecamp's Shape Up method: shaping, pitches, betting, scopes, hill charts, and scope hammering",
       "source": "./",

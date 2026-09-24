@@ -1,0 +1,7 @@
+{
+  "rules": [
+    { "patterns": ["/new$"], "properties": { "context": "sheet", "pull_to_refresh_enabled": true } },
+    { "patterns": ["([unclosed"], "properties": { "modal_style": "half", "uri": "hotwire://fragment/web" } },
+    { "patterns": [], "properties": {} }
+  ]
+}

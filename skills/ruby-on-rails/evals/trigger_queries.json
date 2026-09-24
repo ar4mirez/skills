@@ -1,0 +1,22 @@
+[
+  {"query": "how should I structure business logic in my rails app, services or models?", "should_trigger": true},
+  {"query": "my ActiveRecord query is doing 300 selects on the dashboard page, help", "should_trigger": true},
+  {"query": "set up kamal to deploy my rails 8 app to a digitalocean droplet", "should_trigger": true},
+  {"query": "We want an iOS and Android app for our existing Rails product without hiring mobile devs", "should_trigger": true},
+  {"query": "Turbo stream isn't updating the list after create, the form just sits there", "should_trigger": true},
+  {"query": "upgrade from rails 7.1 to 8.1 — what's the plan?", "should_trigger": true},
+  {"query": "write a migration to rename users.name to full_name on a table with 20M rows", "should_trigger": true},
+  {"query": "should I use rspec or minitest for a new rails project", "should_trigger": true},
+  {"query": "review this controller: def approve; @post = Post.find(params[:id]); @post.update(approved: true); end", "should_trigger": true},
+  {"query": "is sidekiq still needed with solid queue?", "should_trigger": true},
+  {"query": "Build a Django REST API with Celery for background tasks", "should_trigger": false},
+  {"query": "write a ruby script that renames all jpg files in a folder by date taken", "should_trigger": false},
+  {"query": "Create a Laravel Livewire component for a searchable table", "should_trigger": false},
+  {"query": "how do I publish a ruby gem to rubygems.org with a CLI executable", "should_trigger": false},
+  {"query": "Set up a Next.js app with Prisma and deploy it to Vercel", "should_trigger": false},
+  {"query": "Build a native SwiftUI app with Core Data, no backend", "should_trigger": false},
+  {"query": "explain the difference between Python generators and iterators", "should_trigger": false},
+  {"query": "write a Jekyll theme for my blog", "should_trigger": false},
+  {"query": "Configure Nginx as a reverse proxy for a Node app with TLS", "should_trigger": false},
+  {"query": "Phoenix LiveView vs Hotwire for a Elixir team — which should we pick in Elixir?", "should_trigger": false}
+]

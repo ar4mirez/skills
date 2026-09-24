@@ -1,0 +1,14 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rails (8.1.4)
+    redis (5.4.1)
+    sidekiq (8.1.7)
+    turbo-rails (2.0.23)
+
+PLATFORMS
+  arm64-darwin
+
+DEPENDENCIES
+  rails (~> 8.1.4)
+  sidekiq
