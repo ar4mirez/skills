@@ -9,6 +9,15 @@
   },
   "plugins": [
     {
+      "name": "bun-elysia",
+      "description": "Opinionated Bun + Elysia expert: type-safe TypeScript monorepos with Eden Treaty, Drizzle, pg-boss, Better Auth, bun test, Biome, and compiled-binary Kamal deploys",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/bun-elysia"
+      ]
+    },
+    {
       "name": "ruby-on-rails",
       "description": "Opinionated Ruby + Rails 8 expert: simple, modular, testable web apps with Hotwire, the Solid stack and Kamal, plus iOS/Android apps via Hotwire Native",
       "source": "./",

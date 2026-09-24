@@ -1,0 +1,4 @@
+{
+  "name": "@shop/web",
+  "dependencies": { "@elysiajs/eden": "^1.4.0", "elysia": "^1.4.30", "@shop/api": "workspace:*", "zod": "^4.0.0" }
+}

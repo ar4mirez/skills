@@ -1,0 +1,65 @@
+{
+  "skill_name": "bun-elysia",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're starting a B2B SaaS on Bun: an API plus a Next.js web app and an Expo mobile app. Current plan: Express + Prisma, BullMQ on Redis for jobs, Lucia for auth, Jest + ESLint/Prettier, and deploy with `bun run src/index.ts` on a Heroku dyno. Team of 3. Sanity-check this and propose the stack + repo layout.",
+      "expected_output": "An opinionated redesign: a Bun workspaces monorepo (apps/api, apps/web, apps/mobile, packages/db, packages/config) with catalog versions; Elysia API with feature modules and Eden Treaty for end-to-end types into Next.js and Expo; Drizzle on Bun SQL instead of Prisma; pg-boss on Postgres instead of BullMQ/Redis; Better Auth (Lucia is deprecated); bun test and Biome instead of Jest and ESLint/Prettier; compiled binaries (bun build --compile) deployed with Kamal (or containers) instead of running .ts on a dyno. Short reasons for each swap, plus first commands.",
+      "files": [],
+      "assertions": [
+        "Recommends Elysia with Eden Treaty for end-to-end types to the web and mobile clients",
+        "Flags Lucia as deprecated and recommends Better Auth",
+        "Recommends pg-boss (Postgres) over BullMQ/Redis for this team, or justifies Redis only if already needed",
+        "Recommends bun test and Biome over Jest and ESLint/Prettier",
+        "Recommends compiling to a binary (bun build --compile) rather than running .ts in production",
+        "Proposes a Bun workspaces monorepo with apps/ and packages/ (and ideally catalog: versions)",
+        "Recommends Drizzle (on Bun SQL) over Prisma, or gives a clear reason if keeping Prisma"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review our Bun monorepo at evals/files/flawed_repo and tell me what to fix first.",
+      "expected_output": "A severity-ranked review: the web client runtime-imports the server app (must be `import type`); packages/ui depends on apps/web; Elysia version drift between api and web plus strict:false (breaks Eden types); the handler takes the whole ctx and the route has no body schema; the service imports Elysia and throws status (not framework-blind); billing imports identity internals; the unchained `app.use`; deprecated lucia and @elysiajs/swagger; error() helper; `bun check` isn't a command; the Alpine runtime image with a glibc binary and --bytecode without --format=esm; bun.lockb; missing Biome. With concrete fixes.",
+      "files": ["evals/files/flawed_repo"],
+      "assertions": [
+        "Flags the web client's runtime import of the server app and recommends `import type { App }`",
+        "Flags the Elysia version mismatch between api and web (and/or strict:false) as breaking Eden types",
+        "Flags the handler taking the whole Context and/or the POST route without a body schema",
+        "Flags the service importing Elysia / throwing status as not framework-blind",
+        "Flags packages/ui depending on an app, or billing importing identity internals (boundary violation)",
+        "Flags deprecated lucia (Better Auth) or @elysiajs/swagger (@elysia/openapi)",
+        "Flags the Dockerfile: Alpine without a musl target and/or --bytecode without --format=esm",
+        "Flags `bun check` as not a real command (use tsc --noEmit)",
+        "Orders findings by severity"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In our Bun monorepo the Next.js app does `import { app } from '@acme/api'` and `treaty<typeof app>(url)`, but every Eden call is typed as any, and the web bundle got huge. apps/web has elysia ^1.4.0 while apps/api has elysia ^1.4.30. What's wrong?",
+      "expected_output": "Diagnoses: the runtime import pulls server code into the client bundle (use `import type { App }` with an exported `type App`, plus verbatimModuleSyntax); version drift between the client and server elysia (align via catalog:, with elysia as a client devDependency); check strict:true; the api exports App from app.ts and routes must be chained into the exported instance. Gives the concrete package.json/catalog and code changes.",
+      "files": [],
+      "assertions": [
+        "Identifies the runtime (non-type) import as the cause of the bloated bundle and recommends `import type`",
+        "Recommends exporting `type App = typeof app` from the server and consuming that type",
+        "Identifies the elysia version drift as a cause of broken/any types and recommends aligning versions (catalog)",
+        "Mentions strict mode and/or elysia as a client devDependency (isolated installs) as requirements for Eden inference",
+        "Gives concrete code or package.json changes"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a notifications feature to our Elysia API: users can GET and PUT their notification preferences (email on/off, push on/off), and when an invoice is paid we should email the customer. Show the module code.",
+      "expected_output": "A module in the house shape: modules/notifications/{model.ts with t schemas incl. response, service.ts as framework-blind functions scoped by account/user and returning Results/throwing DomainErrors, public.ts, index.ts as a chained Elysia controller using the auth macro, a destructured handler, and status(); jobs.ts with a pg-boss job for the invoice-paid email that is idempotent and enqueued after the write}, registration in app.ts, and tests with treaty(app).",
+      "files": [],
+      "assertions": [
+        "Organizes code as a module with separate controller (Elysia instance), model (t schemas), and service files",
+        "Service code does not import Elysia (framework-blind) and is scoped to the current user/account",
+        "Routes declare body schemas and response schemas, and use method chaining with destructured handlers",
+        "Uses a macro/plugin for auth (e.g. auth: true) rather than manual per-handler checks",
+        "Sends the invoice-paid email via a background job (pg-boss or equivalent) that is idempotent, not inline in the request",
+        "Cross-module interaction goes through a public API or the job queue rather than importing another module's internals",
+        "Includes tests (e.g. treaty(app) / bun test)"
+      ]
+    }
+  ]
+}

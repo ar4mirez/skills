@@ -1,0 +1,60 @@
+# config/deploy.yml (Kamal 2) for the compiled Elysia API. Replace every <placeholder>.
+service: acme-api
+image: <github_user>/acme-api
+
+builder:
+  arch: amd64
+  dockerfile: apps/api/Dockerfile
+  context: .
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+    cmd: ./server
+  worker:
+    hosts:
+      - <server_ip>
+    cmd: ./worker          # pg-boss consumers; same image, different process
+
+proxy:
+  host: <api.example.com>
+  app_port: 3000           # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up              # Elysia route returning 200 'ok'
+    interval: 3
+  ssl: true                # Let's Encrypt; behind Cloudflare/multi-host use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: 3000
+  secret:
+    - DATABASE_URL           # via PgBouncer (set DATABASE_PREPARE=false in transaction mode)
+    - DATABASE_DIRECT_URL    # direct Postgres for migrations
+    - BETTER_AUTH_SECRET
+    - SENTRY_DSN
+
+accessories:
+  db:
+    image: postgres:17
+    host: <db_ip>
+    port: "127.0.0.1:5432:5432"
+    env:
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql/data
+
+# Run migrations before the new version starts (drizzle-kit migrate via a one-off container
+# with Bun, or `bun run db:migrate` in CI against DATABASE_DIRECT_URL). See references/deploy-and-operate.md.

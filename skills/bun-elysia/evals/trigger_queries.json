@@ -1,0 +1,22 @@
+[
+  {"query": "how should I structure a large Elysia API, controllers and services?", "should_trigger": true},
+  {"query": "eden treaty types are all any in my next.js app", "should_trigger": true},
+  {"query": "set up a bun workspace monorepo with shared drizzle schema for api and web", "should_trigger": true},
+  {"query": "whats the best way to run background jobs in a bun server? i dont want redis", "should_trigger": true},
+  {"query": "Deploy my Bun API as a single binary with Docker and Kamal", "should_trigger": true},
+  {"query": "add auth to my elysia app, lucia seems dead", "should_trigger": true},
+  {"query": "bun test is flaky when I run it with --parallel against postgres", "should_trigger": true},
+  {"query": "review this elysia route: app.post('/x', (ctx) => service.run(ctx))", "should_trigger": true},
+  {"query": "Migrating our Express + Jest API to Bun, what should we use instead?", "should_trigger": true},
+  {"query": "share types between my Bun backend and Expo app", "should_trigger": true},
+  {"query": "Build a NestJS module with TypeORM repositories", "should_trigger": false},
+  {"query": "Write a Hono app for Cloudflare Workers with D1", "should_trigger": false},
+  {"query": "style this Next.js landing page with Tailwind", "should_trigger": false},
+  {"query": "How do I make a bun (bread roll) recipe with sourdough starter", "should_trigger": false},
+  {"query": "Set up Deno Fresh with Deno KV", "should_trigger": false},
+  {"query": "Write a Python FastAPI endpoint with Pydantic validation", "should_trigger": false},
+  {"query": "Explain React Server Components vs client components", "should_trigger": false},
+  {"query": "configure webpack module federation for micro-frontends", "should_trigger": false},
+  {"query": "write a Go HTTP server with chi router", "should_trigger": false},
+  {"query": "fix this Rails controller N+1 query", "should_trigger": false}
+]

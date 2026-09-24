@@ -12,6 +12,7 @@ Copilot, VS Code, and others).
 | Skill | What it does |
 |---|---|
 | [`shape-up`](skills/shape-up/SKILL.md) | Acts as an expert practitioner of Basecamp's [Shape Up](https://basecamp.com/shapeup) method. It shapes raw ideas into pitches (appetite, breadboards, rabbit holes, no-gos), runs betting tables, hands projects to teams, maps scopes, reads hill charts, and hammers scope to ship on time. It bundles a pitch checker and a hill-chart renderer. |
+| [`bun-elysia`](skills/bun-elysia/SKILL.md) | An opinionated senior Bun + Elysia engineer. It builds type-safe TypeScript monorepos with Bun workspaces and catalogs, Elysia feature modules with framework-blind services, Eden Treaty end-to-end types for Next.js and Expo, Drizzle on Bun SQL, pg-boss jobs, Better Auth, bun test, Biome, and compiled-binary deploys with Kamal behind Cloudflare. Its templates are verified together (they lint, type-check, test, and compile), and it bundles a repo audit and a module scaffolder. |
 | [`ruby-on-rails`](skills/ruby-on-rails/SKILL.md) | An opinionated senior Ruby and Rails 8 engineer. It builds a modular majestic monolith: DDD bounded contexts in `app/domains` enforced by Packwerk, operation, form, and query objects, Hotwire + ViewComponent + Tailwind, the Solid stack, PostgreSQL/PgBouncer, RSpec + FactoryBot, Pundit, and Kamal behind Cloudflare. It ships iOS and Android apps with Hotwire Native, and bundles an app audit and a path-configuration validator. |
 
 ## Install

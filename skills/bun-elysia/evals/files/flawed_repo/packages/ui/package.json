@@ -1,0 +1,1 @@
+{ "name": "@shop/ui", "dependencies": { "@shop/web": "workspace:*" } }

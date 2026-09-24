@@ -1,0 +1,6 @@
+{
+  "name": "shop",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": { "check": "bun check && biome ci ." }
+}

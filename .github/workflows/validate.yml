@@ -22,6 +22,10 @@ jobs:
         with:
           ruby-version: "3.4"
 
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
       - name: Validate skills (spec + repo conventions)
         run: python3 scripts/validate_skills.py
 

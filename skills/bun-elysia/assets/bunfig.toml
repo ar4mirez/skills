@@ -1,0 +1,11 @@
+# bunfig.toml (repo root)
+[install]
+linker = "isolated"          # pnpm-style strict deps: no phantom imports (default for new workspaces)
+exact = false
+
+[test]
+preload = ["./apps/api/test/setup.ts"]   # swaps real auth for a header stub; see assets/test-setup.ts
+coverage = true
+coverageThreshold = { lines = 0.8, functions = 0.8 }
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = ["**/migrations/**", "**/scripts/**"]
