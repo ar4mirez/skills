@@ -268,6 +268,11 @@ compile as one monorepo):
 - `assets/Dockerfile`, `assets/deploy.yml`, and `assets/github-ci.yml`:
   build, deploy, and the CI gate.
 
+Scripts ship with this skill, not with the user's project. Run them from
+this skill's directory against the user's path, and report findings in
+terms of the user's files. Never tell the user to run a skill script as if
+it were in their repo.
+
 Scripts (Bun, built-in modules only, `--help`):
 - `scripts/audit.ts`: static health check of a repo. Exits 1 on high findings.
 - `scripts/new-module.ts`: scaffolds a module in the house shape.

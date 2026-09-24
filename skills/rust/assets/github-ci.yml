@@ -1,0 +1,46 @@
+# .github/workflows/ci.yml: zero-warning gate for a Cargo workspace.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_BUILD_WARNINGS: deny   # Cargo 1.97+: every local lint warning fails (build, test, doc)
+  SQLX_OFFLINE: "true"         # compile queries against committed .sqlx/, not a live DB
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: acme }
+        ports: ["5432:5432"]
+        options: --health-cmd="pg_isready" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/acme
+    steps:
+      - uses: actions/checkout@v7
+      - run: rustup toolchain install          # installs the rust-toolchain.toml pin + components
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-deny,cargo-machete
+      - run: cargo install sqlx-cli --locked --no-default-features --features rustls,postgres
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - run: cargo sqlx migrate run --source crates/acme-api/migrations
+      - run: cargo sqlx prepare --workspace --check   # .sqlx/ matches the queries
+      - run: cargo nextest run --workspace --all-features --locked
+      - run: cargo test --doc --workspace --all-features --locked   # nextest skips doctests
+      - run: cargo doc --workspace --no-deps --all-features --locked
+      - run: cargo deny check
+      - run: cargo machete
+      - run: cargo build --release --locked

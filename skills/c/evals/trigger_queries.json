@@ -1,0 +1,22 @@
+[
+  {"query": "my C program segfaults only in release builds, how do I find it?", "should_trigger": true},
+  {"query": "set up a CMake project for a C library with tests and sanitizers", "should_trigger": true},
+  {"query": "is strncpy safe? what should I use instead of strcpy in C", "should_trigger": true},
+  {"query": "review this function: char *s = malloc(n * sizeof(char)); strcpy(s, input);", "should_trigger": true},
+  {"query": "which hardening flags should our gcc release build use? _FORTIFY_SOURCE, relro, etc", "should_trigger": true},
+  {"query": "write a libFuzzer harness for my config parser written in C", "should_trigger": true},
+  {"query": "C23: should I use nullptr and constexpr yet? which compilers support them", "should_trigger": true},
+  {"query": "build a static musl binary of my C service and deploy it in a tiny container", "should_trigger": true},
+  {"query": "pthread vs C11 threads for a portable C server, and how do I shut it down on SIGTERM", "should_trigger": true},
+  {"query": "our Makefile has CFLAGS everywhere, help me migrate this C code to modern CMake", "should_trigger": true},
+  {"query": "write a C++20 class with RAII and std::unique_ptr for a file handle", "should_trigger": false},
+  {"query": "explain templates and concepts in modern C++", "should_trigger": false},
+  {"query": "write a C# ASP.NET Core minimal API", "should_trigger": false},
+  {"query": "configure STM32 HAL GPIO interrupts in CubeIDE", "should_trigger": false},
+  {"query": "write an Objective-C category on NSString", "should_trigger": false},
+  {"query": "fix this Rust borrow checker error with lifetimes", "should_trigger": false},
+  {"query": "set up a Go module with a chi HTTP router", "should_trigger": false},
+  {"query": "write a Zig build.zig for a new Zig executable", "should_trigger": false},
+  {"query": "what is the C major scale on piano", "should_trigger": false},
+  {"query": "optimize this Python loop with numpy vectorization", "should_trigger": false}
+]

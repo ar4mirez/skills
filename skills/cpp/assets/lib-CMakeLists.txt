@@ -1,0 +1,52 @@
+# A library target: sources private, headers as a FILE_SET, flags via the options target.
+add_library(acme_wordcount)
+add_library(acme::wordcount ALIAS acme_wordcount)
+
+target_sources(acme_wordcount
+  PRIVATE
+    src/wordcount.cpp
+  PUBLIC
+    FILE_SET HEADERS
+    BASE_DIRS include
+    FILES
+      include/acme/wordcount/wordcount.hpp
+      include/acme/wordcount/thread_pool.hpp)
+
+# Consumers need C++23 and threads; say so on the target, not globally.
+find_package(Threads REQUIRED)
+target_compile_features(acme_wordcount PUBLIC cxx_std_23)
+target_link_libraries(acme_wordcount
+  PUBLIC Threads::Threads
+  PRIVATE $<BUILD_INTERFACE:acme::options>)
+set_target_properties(acme_wordcount PROPERTIES
+  EXPORT_NAME wordcount
+  VERSION ${PROJECT_VERSION}
+  SOVERSION ${PROJECT_VERSION_MAJOR})
+
+install(TARGETS acme_wordcount
+  EXPORT acmeTargets
+  FILE_SET HEADERS)
+install(EXPORT acmeTargets
+  NAMESPACE acme::
+  FILE acmeTargets.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/acme)
+
+include(CMakePackageConfigHelpers)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/acmeConfig.cmake.in [[
+@PACKAGE_INIT@
+include(CMakeFindDependencyMacro)
+find_dependency(Threads)
+include("${CMAKE_CURRENT_LIST_DIR}/acmeTargets.cmake")
+check_required_components(acme)
+]])
+configure_package_config_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/acmeConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/acmeConfig.cmake
+  INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/acme)
+write_basic_package_version_file(
+  ${CMAKE_CURRENT_BINARY_DIR}/acmeConfigVersion.cmake
+  COMPATIBILITY SameMajorVersion)
+install(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/acmeConfig.cmake
+  ${CMAKE_CURRENT_BINARY_DIR}/acmeConfigVersion.cmake
+  DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/acme)

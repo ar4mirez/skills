@@ -1,0 +1,9 @@
+[workspace]
+members = ["crates/core", "crates/api"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+
+[workspace.lints.clippy]
+pedantic = "warn"

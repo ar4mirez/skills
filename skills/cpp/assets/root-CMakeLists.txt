@@ -1,0 +1,41 @@
+# Root CMakeLists.txt: project-wide policy only. Every flag lives on a target.
+cmake_minimum_required(VERSION 3.28...4.4)
+
+project(acme
+  VERSION 0.1.0
+  DESCRIPTION "Word counting library, CLI, and service"
+  LANGUAGES CXX)
+
+# The language level is the one thing set globally: every target must agree on it.
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+option(ACME_BUILD_TESTS "Build unit tests" ${PROJECT_IS_TOP_LEVEL})
+option(ACME_BUILD_SERVER "Build the HTTP service (needs cpp-httplib)" ${PROJECT_IS_TOP_LEVEL})
+option(ACME_BUILD_FUZZERS "Build libFuzzer targets (Clang with libFuzzer only)" OFF)
+option(ACME_BUILD_BENCHMARKS "Build google/benchmark targets" OFF)
+option(ACME_WARNINGS_AS_ERRORS "Turn warnings into errors (CI only)" OFF)
+option(ACME_HARDENING "Enable OpenSSF-recommended hardening flags" ON)
+set(ACME_SANITIZERS "" CACHE STRING "Semicolon list: address;undefined, or thread")
+
+include(GNUInstallDirs)
+include(cmake/ProjectOptions.cmake)
+
+add_subdirectory(libs/wordcount)
+add_subdirectory(apps/wc)
+if(ACME_BUILD_SERVER)
+  add_subdirectory(apps/wc-server)
+endif()
+
+if(ACME_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+if(ACME_BUILD_FUZZERS)
+  add_subdirectory(fuzz)
+endif()
+if(ACME_BUILD_BENCHMARKS)
+  add_subdirectory(bench)
+endif()

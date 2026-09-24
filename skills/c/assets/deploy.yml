@@ -1,0 +1,38 @@
+# config/deploy.yml (Kamal 2) for kvstore-server. Replace every <placeholder>.
+service: kvstore
+image: <github_user>/kvstore
+
+builder:
+  arch: amd64
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <kv.example.com>
+  app_port: 8080           # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up              # served by http_handle(); must return 200
+    interval: 3
+  ssl: true                # Let's Encrypt; behind Cloudflare (Full strict) use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 8080
+    WORKERS: 4
+    KVSTORE_FILE: /etc/kvstore/app.kv
+
+volumes:
+  - /srv/kvstore/app.kv:/etc/kvstore/app.kv:ro   # distroless has no shell: ship data, not scripts

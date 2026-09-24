@@ -1,0 +1,75 @@
+# Virtual workspace root. Members inherit package fields, dependency versions, and lints.
+[workspace]
+members = ["crates/*"]
+# A virtual manifest has no [package].edition, so the resolver must be set explicitly.
+# "3" is the edition-2024 default: MSRV-aware resolution (falls back to versions whose
+# rust-version fits yours).
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"   # MSRV; sqlx 0.9 needs 1.94. rust-toolchain.toml pins the dev toolchain.
+license = "MIT"
+publish = false
+
+# One version per dependency for the whole repo. Members write `serde.workspace = true`
+# and may add features, never versions. default-features = false here, opt in per crate.
+[workspace.dependencies]
+acme-core = { path = "crates/acme-core" }
+
+anyhow = "1.0.104"
+axum = "0.8.9"
+clap = { version = "4.6.7", features = ["derive"] }
+criterion = { version = "0.8.2", default-features = false, features = ["cargo_bench_support"] }
+http-body-util = "0.1.5"
+proptest = "1.11.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.151"
+sqlx = { version = "0.9.0", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "macros", "migrate"] }
+thiserror = "2.0.21"
+tokio = { version = "1.53.1", features = ["macros", "rt-multi-thread", "signal", "net"] }
+tower = { version = "0.5.3", features = ["util"] }
+tower-http = { version = "0.7.1", features = ["trace", "timeout", "limit", "request-id", "catch-panic"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter", "json"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"            # a crate that truly needs unsafe overrides this locally (see references)
+missing_debug_implementations = "warn"
+unreachable_pub = "warn"
+rust_2018_idioms = { level = "warn", priority = -1 }
+
+[workspace.lints.clippy]
+# Groups first (priority -1) so the individual lints below override them.
+pedantic = { level = "warn", priority = -1 }
+# Curated pedantic opt-outs: noisy for application code, low signal.
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+# Restriction lints worth having everywhere.
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+unwrap_used = "warn"              # tests are exempt via clippy.toml
+expect_used = "warn"
+print_stdout = "warn"             # use tracing; a CLI allows it where it writes output
+print_stderr = "warn"
+large_futures = "warn"
+
+[profile.release]
+lto = "fat"
+codegen-units = 1
+strip = "symbols"
+# panic stays "unwind": a panicking request is caught per task (and by CatchPanicLayer)
+# instead of killing the whole server. CLIs may set panic = "abort" for smaller binaries.
+
+# `cargo build --profile profiling` for samply/perf: release speed plus symbols.
+[profile.profiling]
+inherits = "release"
+debug = "line-tables-only"
+strip = "none"
+
+# Dependencies change rarely; optimize them in dev so tests and debug runs are fast.
+[profile.dev.package."*"]
+opt-level = 1

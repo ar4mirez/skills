@@ -1,0 +1,13 @@
+[package]
+name = "shop-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1"
+lazy_static = "1.5"
+serde = "1.0.200"
+regex = "*"
+
+[lints]
+workspace = true

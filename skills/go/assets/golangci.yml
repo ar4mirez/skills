@@ -1,0 +1,44 @@
+# golangci-lint v2 config. Run: golangci-lint run ./...  (CI: golangci/golangci-lint-action)
+# "standard" = errcheck, govet, ineffassign, staticcheck (includes gosimple/stylecheck), unused.
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose       # unclosed http.Response bodies leak connections
+    - errorlint       # == on wrapped errors, %v instead of %w
+    - gosec           # injection, weak crypto, file perms, integer overflow
+    - misspell
+    - modernize       # min/max, range-over-int, slices/maps helpers, etc.
+    - noctx           # HTTP requests and DB calls without a context
+    - nolintlint      # every //nolint must name a linter and say why
+    - rowserrcheck
+    - sqlclosecheck
+    - unconvert
+    - usestdlibvars   # http.MethodGet, http.StatusOK over literals
+    - usetesting      # t.Context(), t.TempDir(), t.Setenv()
+  settings:
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment   # noisy; optimize struct layout only where profiles say so
+        - shadow           # `err` shadowing is idiomatic Go
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+  exclusions:
+    generated: lax      # skips sqlc output ("Code generated ... DO NOT EDIT.")
+    presets:
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters: [gosec, noctx]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/acme/links

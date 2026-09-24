@@ -1,0 +1,39 @@
+# config/deploy.yml (Kamal 2) for the C++ service. Replace every <placeholder>.
+service: acme-wc
+image: <github_user>/acme-wc
+
+builder:
+  arch: amd64
+  dockerfile: Dockerfile
+  context: .
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <wc.example.com>
+  app_port: 8080           # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up              # wc-server answers 200 "ok"
+    interval: 3
+  ssl: true                # Let's Encrypt; behind Cloudflare/multi-host use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 8080
+
+# kamal-proxy stops the old container with SIGTERM: wc-server handles it with
+# sigwait + Server::stop(), so in-flight requests finish. distroless has no
+# shell, so `kamal app exec` needs a :debug image variant.

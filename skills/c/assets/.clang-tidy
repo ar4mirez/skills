@@ -1,0 +1,25 @@
+# Curated clang-tidy set for C. Run: clang-tidy -p build/dev <files>
+# (needs compile_commands.json, which every preset exports).
+# Left out on purpose: cert-err33-c (flags every unchecked fprintf; our own API
+# uses [[nodiscard]] instead), misc-include-cleaner (false positives on the
+# macOS SDK's split headers), readability-implicit-bool-conversion (noise).
+Checks: >
+  -*,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
+  -bugprone-assignment-in-if-condition,
+  cert-err34-c,
+  cert-str34-c,
+  cert-msc30-c,
+  cert-msc32-c,
+  clang-analyzer-*,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  misc-no-recursion,
+  performance-*,
+  portability-*,
+  readability-braces-around-statements,
+  readability-inconsistent-declaration-parameter-name,
+  readability-misleading-indentation,
+  readability-non-const-parameter
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(include|src|app)/'

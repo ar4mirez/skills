@@ -1,0 +1,17 @@
+# sqlc: SQL in db/queries -> type-safe Go in internal/link/linkdb (pgx/v5, no database/sql).
+# Regenerate with `go tool sqlc generate` and commit the output; CI runs `go tool sqlc diff`.
+version: "2"
+sql:
+  - engine: postgresql
+    schema: db/migrations   # goose files: sqlc ignores the "-- +goose Down" sections
+    queries: db/queries
+    gen:
+      go:
+        package: linkdb
+        out: internal/link/linkdb
+        sql_package: pgx/v5
+        overrides:
+          - db_type: timestamptz
+            go_type: time.Time
+        rename:
+          target_url: TargetURL

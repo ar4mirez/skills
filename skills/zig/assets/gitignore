@@ -1,0 +1,4 @@
+# Zig build outputs and caches (0.16 fetches dependencies into zig-pkg/).
+.zig-cache/
+zig-out/
+zig-pkg/

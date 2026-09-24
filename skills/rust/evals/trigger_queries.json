@@ -1,0 +1,22 @@
+[
+  {"query": "how should I structure a cargo workspace with a shared library and two binaries?", "should_trigger": true},
+  {"query": "my axum handler says Handler<_, _> is not implemented, what gives", "should_trigger": true},
+  {"query": "thiserror or anyhow for my crate's errors?", "should_trigger": true},
+  {"query": "set up sqlx with postgres migrations and compile-time checked queries in CI", "should_trigger": true},
+  {"query": "Dockerize my Rust API with a small image and deploy it with Kamal", "should_trigger": true},
+  {"query": "the borrow checker keeps complaining when I store a reference in my struct", "should_trigger": true},
+  {"query": "why is my tokio service stalling under load? I call std::fs in a handler", "should_trigger": true},
+  {"query": "write a CLI in rust with clap that reads stdin and has proper exit codes", "should_trigger": true},
+  {"query": "which clippy lints and cargo-deny config should our Rust CI enforce?", "should_trigger": true},
+  {"query": "profile and speed up this Rust function, it's allocating too much", "should_trigger": true},
+  {"query": "Write a Go HTTP server with chi and pgx", "should_trigger": false},
+  {"query": "Set up a Bun + Elysia API with Drizzle", "should_trigger": false},
+  {"query": "fix this Rails controller N+1 query", "should_trigger": false},
+  {"query": "Write an embedded no_std firmware for an STM32 using RTIC", "should_trigger": false},
+  {"query": "Build a Leptos full-stack web app with server functions and hydration", "should_trigger": false},
+  {"query": "How do I remove rust stains from a cast iron pan?", "should_trigger": false},
+  {"query": "Write a C++ class with RAII for a file handle", "should_trigger": false},
+  {"query": "Configure a Kubernetes Helm chart for a Java Spring service", "should_trigger": false},
+  {"query": "Explain how Postgres MVCC and vacuum work", "should_trigger": false},
+  {"query": "Write a Python FastAPI endpoint with SQLAlchemy", "should_trigger": false}
+]

@@ -1,0 +1,14 @@
+.{
+    .name = .tally,
+    .version = "0.1.0",
+    .fingerprint = 0xe8b6fe03ae5584f4, // Never change: package identity. Regenerate only for a hostile fork.
+    .minimum_zig_version = "0.16.0",
+    .dependencies = .{},
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "include",
+        "examples",
+    },
+}

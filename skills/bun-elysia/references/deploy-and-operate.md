@@ -74,7 +74,12 @@ See `assets/deploy.yml`:
   worker hosts independently. Each container runs one Bun process. For more
   cores per host, run more containers or a `node:cluster` entrypoint.
   `reusePort` is on by default on Linux.
-- **Graceful shutdown:** Kamal stops containers with a 30-second timeout.
+- **Graceful shutdown:** for proxied roles (`web`), kamal-proxy drains
+  in-flight requests first (`drain_timeout`, 30 seconds by default). Then
+  `docker stop` sends SIGTERM with Docker's default 10-second timeout,
+  unless you set `stop_timeout`. Non-proxied roles (`worker`) get
+  `drain_timeout` (30 seconds) as their stop timeout. This was verified in
+  Kamal's `role.rb`.
   The worker stops pg-boss gracefully (`queue.stop({ graceful: true, timeout:
   25_000 })`), and in-flight requests finish.
 

@@ -1,0 +1,54 @@
+# config/deploy.yml (Kamal 2) for acme-api. Replace every <placeholder>.
+service: acme-api
+image: <github_user>/acme-api
+
+builder:
+  arch: amd64            # build on an amd64 runner; cross-arch QEMU builds of Rust are very slow
+  dockerfile: Dockerfile
+  context: .
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <api.example.com>
+  app_port: 3000         # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up            # axum route returning 200 "ok"
+    interval: 3
+  ssl: true              # Let's Encrypt; behind Cloudflare use an Origin CA cert instead:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 3000
+    RUST_LOG: info,tower_http=warn
+    DB_MAX_CONNECTIONS: 10
+  secret:
+    - DATABASE_URL
+
+accessories:
+  db:
+    image: postgres:18
+    host: <db_ip>
+    port: "127.0.0.1:5432:5432"
+    env:
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql
+
+# Migrations are embedded (sqlx::migrate!) and run at boot under a Postgres advisory lock,
+# so the new container migrates before kamal-proxy sees /up succeed. Keep them backward
+# compatible with the previous release (expand, then contract) for zero-downtime deploys.

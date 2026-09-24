@@ -1,0 +1,22 @@
+[
+  {"query": "set up a new C++ project with CMake presets and vcpkg", "should_trigger": true},
+  {"query": "my C++ program segfaults only in release builds, how do I find it?", "should_trigger": true},
+  {"query": "review this class: it has a raw pointer member and a destructor that deletes it", "should_trigger": true},
+  {"query": "should I use std::expected or exceptions for errors in C++23?", "should_trigger": true},
+  {"query": "ThreadSanitizer reports a data race in my thread pool, help", "should_trigger": true},
+  {"query": "modernize our C++11 codebase: we use new/delete everywhere and a Makefile", "should_trigger": true},
+  {"query": "what compiler flags should I use to harden a C++ binary for production?", "should_trigger": true},
+  {"query": "GoogleTest or Catch2 for a new CMake project? how do I hook it into ctest", "should_trigger": true},
+  {"query": "build a small C++ HTTP service and deploy it in a distroless container with Kamal", "should_trigger": true},
+  {"query": "why does my string_view print garbage after I return it from a function", "should_trigger": true},
+  {"query": "write a C function that parses a config file with fgets and malloc", "should_trigger": false},
+  {"query": "convert this C++ code to idiomatic Rust with Result and ownership", "should_trigger": false},
+  {"query": "set up a Go module with golangci-lint and a Dockerfile", "should_trigger": false},
+  {"query": "create an Unreal Engine 5 Blueprint-callable actor component", "should_trigger": false},
+  {"query": "write a Qt QML UI with signals and slots for a settings page", "should_trigger": false},
+  {"query": "configure an Arduino sketch to blink an LED with interrupts", "should_trigger": false},
+  {"query": "optimize this Python loop with numpy vectorization", "should_trigger": false},
+  {"query": "explain C# async/await and Task.Run in ASP.NET Core", "should_trigger": false},
+  {"query": "set up a Zig build.zig for a cross-compiled static binary", "should_trigger": false},
+  {"query": "write a Java Spring Boot REST controller with validation", "should_trigger": false}
+]

@@ -1,0 +1,212 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
+      }
+    },
+    {
+      "name": "dev",
+      "displayName": "Debug",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "asan",
+      "displayName": "Debug + ASan + UBSan",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "KVSTORE_SANITIZE": "ON"
+      }
+    },
+    {
+      "name": "tsan",
+      "displayName": "Debug + TSan",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "KVSTORE_TSAN": "ON"
+      }
+    },
+    {
+      "name": "release",
+      "displayName": "Release, hardened",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "KVSTORE_HARDENING": "ON",
+        "KVSTORE_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "coverage",
+      "displayName": "Debug + gcov coverage (GCC or clang)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "KVSTORE_HARDENING": "OFF",
+        "CMAKE_C_FLAGS": "--coverage",
+        "CMAKE_EXE_LINKER_FLAGS": "--coverage"
+      }
+    },
+    {
+      "name": "ci",
+      "displayName": "CI: ASan + UBSan, warnings are errors",
+      "inherits": "asan",
+      "cacheVariables": {
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
+      }
+    },
+    {
+      "name": "ci-release",
+      "displayName": "CI: hardened release, warnings are errors",
+      "inherits": "release",
+      "cacheVariables": {
+        "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
+      }
+    },
+    {
+      "name": "fuzz",
+      "displayName": "libFuzzer (LLVM clang only)",
+      "inherits": "base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "CMAKE_C_COMPILER": "clang",
+        "KVSTORE_SANITIZE": "ON",
+        "KVSTORE_FUZZ": "ON",
+        "KVSTORE_BUILD_TESTS": "OFF"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "dev",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "asan",
+      "configurePreset": "asan"
+    },
+    {
+      "name": "tsan",
+      "configurePreset": "tsan"
+    },
+    {
+      "name": "release",
+      "configurePreset": "release"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "ci",
+      "configurePreset": "ci"
+    },
+    {
+      "name": "ci-release",
+      "configurePreset": "ci-release"
+    },
+    {
+      "name": "fuzz",
+      "configurePreset": "fuzz"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "output": {
+        "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error",
+        "stopOnFailure": false
+      }
+    },
+    {
+      "name": "dev",
+      "inherits": "base",
+      "configurePreset": "dev"
+    },
+    {
+      "name": "asan",
+      "inherits": "base",
+      "configurePreset": "asan"
+    },
+    {
+      "name": "tsan",
+      "inherits": "base",
+      "configurePreset": "tsan"
+    },
+    {
+      "name": "release",
+      "inherits": "base",
+      "configurePreset": "release"
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "ci",
+      "inherits": "base",
+      "configurePreset": "ci"
+    },
+    {
+      "name": "ci-release",
+      "inherits": "base",
+      "configurePreset": "ci-release"
+    }
+  ],
+  "workflowPresets": [
+    {
+      "name": "ci",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci"
+        },
+        {
+          "type": "build",
+          "name": "ci"
+        },
+        {
+          "type": "test",
+          "name": "ci"
+        }
+      ]
+    },
+    {
+      "name": "ci-release",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "ci-release"
+        },
+        {
+          "type": "build",
+          "name": "ci-release"
+        },
+        {
+          "type": "test",
+          "name": "ci-release"
+        }
+      ]
+    }
+  ]
+}

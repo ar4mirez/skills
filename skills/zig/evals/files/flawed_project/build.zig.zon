@@ -1,0 +1,11 @@
+.{
+    .name = "inventory",
+    .version = "0.1.0",
+    .minimum_zig_version = "0.13.0",
+    .dependencies = .{
+        .httpz = .{
+            .url = "https://github.com/karlseguin/http.zig/archive/refs/heads/master.tar.gz",
+        },
+    },
+    .paths = .{""},
+}

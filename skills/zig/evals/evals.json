@@ -1,0 +1,63 @@
+{
+  "skill_name": "zig",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm starting a Zig project: a small key-value HTTP service plus a CLI that talks to it, and I want to deploy the service on a Hetzner box. I found this starter online: `pub fn main() !void { var gpa = std.heap.GeneralPurposeAllocator(.{}){}; const allocator = gpa.allocator(); const stdout = std.io.getStdOut().writer(); ... }` and a build.zig with `b.addExecutable(.{ .name = \"kv\", .root_source_file = b.path(\"src/main.zig\"), .target = target, .optimize = optimize })`. We're on the latest Zig. Set up the project layout, build files, and deploy plan.",
+      "expected_output": "Targets Zig 0.16 and explains the starter is pre-0.15/0.16 and won't compile: uses pub fn main(init: std.process.Init) with init.gpa/init.io instead of GeneralPurposeAllocator, std.Io.File.Writer with a buffer and flush instead of std.io.getStdOut, and .root_module = b.createModule(...) in build.zig. Proposes src/root.zig (library logic), src/main.zig (CLI), src/server.zig (std.http.Server over std.Io.net with /up), build.zig.zon with .name enum literal + fingerprint + minimum_zig_version, a test step over every module, and deploy as a ReleaseSafe static musl binary in a distroless/static nonroot image via Kamal 2 (app_port, /up healthcheck) with Cloudflare in front.",
+      "files": [],
+      "assertions": [
+        "States that GeneralPurposeAllocator / std.io.getStdOut are removed in current Zig and replaces them with Juicy Main (init.gpa, init.io) and a buffered std.Io.File.Writer with flush()",
+        "Uses `.root_module = b.createModule(...)` (not root_source_file on addExecutable) in build.zig",
+        "build.zig.zon has an enum-literal .name, a .fingerprint, and minimum_zig_version 0.16.0",
+        "Separates reusable logic (src/root.zig module) from thin CLI and service entrypoints",
+        "Service uses std.http.Server over std.Io.net (or a justified 0.16-compatible package) and exposes /up for health checks",
+        "Builds a ReleaseSafe static binary (-Dtarget=x86_64-linux-musl -Doptimize=ReleaseSafe) and ships it in a minimal image (distroless/static or scratch) with Kamal 2",
+        "Adds a test step and tests that use std.testing.allocator"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review the Zig project at evals/files/flawed_project. It's supposed to build on Zig 0.16. Tell me what's wrong and what to fix first.",
+      "expected_output": "A severity-ranked review: it doesn't build on 0.16 (build.zig root_source_file on addExecutable and addStaticLibrary; build.zig.zon string name, no fingerprint, url without hash on a branch head, minimum 0.13; GeneralPurposeAllocator, std.io.getStdOut, std.process.argsAlloc/std.os.getenv, std.net, std.fs.cwd, readToEndAlloc, std.Thread.Mutex, ArrayList.init, std.mem.split, std.json.stringify, std.time.sleep, std.crypto.random, usingnamespace, @Type, async/await). Correctness/safety: catch unreachable on user input (PORT parse, handler), catch {} swallowing append errors, args[1] unchecked, arena never deinit'd, gpa never deinit'd, file never closed, thread per connection with shared store and no bound, no tests or test step. Deploy: Debug build in Dockerfile, gnu target on scratch, root user, .gitignore uses zig-cache. With concrete 0.16 replacements.",
+      "files": ["evals/files/flawed_project"],
+      "assertions": [
+        "Flags build.zig: root_source_file directly on addExecutable and the removed addStaticLibrary, with the root_module / addLibrary replacement",
+        "Flags build.zig.zon: string .name, missing fingerprint, and the dependency url without a hash (and/or pointing at a moving branch)",
+        "Flags removed std APIs (at least four of: GeneralPurposeAllocator, std.io, std.net, std.fs.cwd, std.Thread.Mutex, std.time.sleep, std.crypto.random, std.os.getenv, argsAlloc, ArrayList.init, std.mem.split, std.json.stringify) with their 0.16 replacements",
+        "Flags usingnamespace, @Type, and/or the async/await keywords as removed language features",
+        "Flags `catch unreachable` on runtime input and/or `catch {}` swallowing errors",
+        "Flags resource leaks or lifetime issues (arena or gpa never deinit'd, file never closed, unchecked args[1])",
+        "Flags the Dockerfile building Debug (no -Doptimize) and/or the glibc target on a scratch image",
+        "Orders findings by severity, starting with what blocks the build"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My Zig 0.16 service leaks memory under load and sometimes logs garbage paths. Here's the handler: `fn handle(gpa: Allocator, req: *std.http.Server.Request) !void { const body_reader = try req.readerExpectContinue(&buf); const body = try body_reader.allocRemaining(gpa, .unlimited); const result = try process(gpa, body); std.log.info(\"{s} done\", .{req.head.target}); try req.respond(result, .{}); }`. What's wrong and how should it look?",
+      "expected_output": "Explains: body and result are allocated from gpa and never freed (use a per-request ArenaAllocator reset between requests, or defer free); .unlimited lets clients exhaust memory (use .limited(max) and check content_length, respond 413); req.head.target is invalidated once the body reader is created (route/copy before reading); suggests keeping kamal-proxy/Cloudflare buffering in front; shows a corrected handler and a test with std.testing.allocator (and possibly checkAllAllocationFailures).",
+      "files": [],
+      "assertions": [
+        "Identifies that body/result allocated from gpa are never freed and recommends a per-request arena (or explicit defer free)",
+        "Identifies `.unlimited` as a memory-exhaustion risk and recommends `.limited(max)` and/or a content_length check with a 413 response",
+        "Identifies that request.head strings (target) are invalidated after creating the body reader, and moves routing/logging before reading the body or copies the value",
+        "Shows corrected handler code using 0.16 APIs",
+        "Recommends or shows a test using std.testing.allocator to catch the leak"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We have a C library (libfoo, a few .c files and foo.h) and want to use it from Zig 0.16, plus expose our Zig parser to a C++ codebase as a static library. We also need the whole thing to build for linux x86_64 and arm64 from our Macs. How do we wire this up?",
+      "expected_output": "Uses b.addTranslateC on foo.h with createModule() (noting @cImport is deprecated), compiles libfoo's .c files with addCSourceFiles + addIncludePath + link_libc, wraps the C API in a thin Zig file (slices, error mapping); exports the parser via export fn with extern-compatible types and status codes (no Zig errors/slices across the boundary), a prefixed symbol namespace, a hand-written header installed with installHeader, b.addLibrary(.linkage = .static); cross-compiles with -Dtarget=x86_64-linux-musl / aarch64-linux-musl (or gnu with a glibc floor) with no extra toolchain; optionally tests the C side via a C program linked in build.zig gated on native target.",
+      "files": [],
+      "assertions": [
+        "Uses b.addTranslateC (and createModule) rather than @cImport, or explicitly notes @cImport is deprecated in 0.16",
+        "Compiles the C sources through build.zig (addCSourceFile(s), addIncludePath) with link_libc",
+        "Exports the Zig parser with `export fn` using only C-compatible types, mapping Zig errors to status codes",
+        "Builds the static library with b.addLibrary(.{ .linkage = .static, ... }) and installs a header",
+        "Explains cross-compiling to Linux x86_64 and aarch64 via -Dtarget from macOS without extra toolchains",
+        "Addresses memory ownership across the C boundary (who frees, which allocator)"
+      ]
+    }
+  ]
+}

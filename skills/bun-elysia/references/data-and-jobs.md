@@ -159,7 +159,9 @@ export async function registerBillingWorkers() {
   semantics, use pg-boss's Drizzle transaction adapter to send inside `tx`.
 - **The worker is a separate process** (`src/worker.ts` → the compiled
   `./worker` binary → the Kamal `worker` role). It shuts down gracefully on
-  SIGTERM within about 25 seconds (Kamal's stop timeout is 30 seconds).
+  SIGTERM within about 25 seconds. Non-proxied roles are stopped with
+  `drain_timeout`, 30 seconds by default; proxied web roles get Docker's
+  10 seconds.
   Break long work into resumable chunks, or smaller jobs.
 - Don't run workers inside the web process in production. Keeping them apart
   isolates CPU spikes and deploys.

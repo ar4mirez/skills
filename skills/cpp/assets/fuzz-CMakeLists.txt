@@ -1,0 +1,5 @@
+# Clang + libFuzzer only (ACME_HAS_LIBFUZZER is probed in ProjectOptions.cmake).
+add_executable(acme_fuzz_wordcount wordcount_fuzz.cpp)
+target_link_libraries(acme_fuzz_wordcount PRIVATE acme::wordcount acme::options)
+target_compile_options(acme_fuzz_wordcount PRIVATE -fsanitize=fuzzer,address,undefined)
+target_link_options(acme_fuzz_wordcount PRIVATE -fsanitize=fuzzer,address,undefined)

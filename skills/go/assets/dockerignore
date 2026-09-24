@@ -1,0 +1,7 @@
+.git
+.github
+.kamal
+dist
+*.out
+*.test
+testdata/fuzz

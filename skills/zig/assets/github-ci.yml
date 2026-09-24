@@ -1,0 +1,32 @@
+# .github/workflows/ci.yml: zero-warning gate for a Zig 0.16 project.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: mlugg/setup-zig@v2        # reads minimum_zig_version from build.zig.zon
+      - run: zig fmt --check .
+      - run: zig build test --summary all                        # Debug: all safety checks
+      - run: zig build test -Doptimize=ReleaseSafe --summary all  # release codegen, checks on
+      - run: zig build test -Doptimize=ReleaseFast --summary all  # catches UB that safety masks
+      - run: zig build -Dtarget=x86_64-linux-musl -Doptimize=ReleaseSafe
+      - run: zig build -Dtarget=aarch64-linux-musl -Doptimize=ReleaseSafe
+
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: mlugg/setup-zig@v2
+      # Debug fuzz builds fail to compile in 0.16.0 (test runner bug); ReleaseSafe works.
+      - run: zig build test --fuzz=100K -Doptimize=ReleaseSafe

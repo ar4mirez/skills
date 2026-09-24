@@ -7,7 +7,7 @@ await registerBillingWorkers()
 console.log('worker started')
 
 const shutdown = async () => {
-  await queue.stop({ graceful: true, timeout: 25_000 }) // under Kamal's 30s stop timeout
+  await queue.stop({ graceful: true, timeout: 25_000 }) // worker role isn't proxied: Kamal stops it with drain_timeout (30s default)
   process.exit(0)
 }
 process.on('SIGTERM', shutdown)

@@ -120,7 +120,8 @@ misses.
 - **Idempotency:** jobs can run twice. Guard with state checks
   (`return if invoice.reminded?`) or unique keys.
 - **Long jobs:** use `ActiveJob::Continuable` steps with cursors, so Kamal's
-  30-second shutdown doesn't restart work.
+  stop doesn't restart work. Non-proxied job roles get `drain_timeout`,
+  30 seconds by default; proxied web roles get Docker's 10 seconds.
 
 ## Runtime: Puma, YJIT, memory
 

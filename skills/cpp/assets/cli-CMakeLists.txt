@@ -1,0 +1,4 @@
+add_executable(acme_wc main.cpp)
+target_link_libraries(acme_wc PRIVATE acme::wordcount acme::options)
+set_target_properties(acme_wc PROPERTIES OUTPUT_NAME wc)
+install(TARGETS acme_wc)

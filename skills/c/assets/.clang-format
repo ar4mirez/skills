@@ -1,0 +1,11 @@
+# clang-format config for C23 sources. Run: clang-format -i $(git ls-files '*.c' '*.h')
+BasedOnStyle: LLVM
+IndentWidth: 4
+ColumnLimit: 100
+PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: Empty
+AllowShortIfStatementsOnASingleLine: Never
+IncludeBlocks: Preserve
+SortIncludes: CaseSensitive
+AlignConsecutiveMacros: false
+InsertBraces: true

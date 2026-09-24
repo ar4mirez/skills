@@ -18,6 +18,33 @@
       ]
     },
     {
+      "name": "c",
+      "description": "Opinionated modern C expert: C23, CMake presets, warnings, sanitizers, hardening, ownership conventions, testing, and fuzzing",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/c"
+      ]
+    },
+    {
+      "name": "cpp",
+      "description": "Opinionated modern C++ expert: C++23, CMake presets, vcpkg, RAII and value semantics, clang-tidy, sanitizers, hardening, and testing",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/cpp"
+      ]
+    },
+    {
+      "name": "go",
+      "description": "Opinionated Go expert: stdlib-first services and CLIs, clean module layout, errors, concurrency, testing, and static-binary deploys",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/go"
+      ]
+    },
+    {
       "name": "ruby-on-rails",
       "description": "Opinionated Ruby + Rails 8 expert: simple, modular, testable web apps with Hotwire, the Solid stack and Kamal, plus iOS/Android apps via Hotwire Native",
       "source": "./",
@@ -27,12 +54,30 @@
       ]
     },
     {
+      "name": "rust",
+      "description": "Opinionated Rust expert: Cargo workspaces, error handling, async with tokio/axum, lints, testing, and lean static deploys",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/rust"
+      ]
+    },
+    {
       "name": "shape-up",
       "description": "Expert practitioner of Basecamp's Shape Up method: shaping, pitches, betting, scopes, hill charts, and scope hammering",
       "source": "./",
       "strict": false,
       "skills": [
         "./skills/shape-up"
+      ]
+    },
+    {
+      "name": "zig",
+      "description": "Opinionated Zig 0.16 expert: build.zig, allocators, error handling, comptime, C interop, testing, and cross-compiled deploys",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/zig"
       ]
     }
   ]

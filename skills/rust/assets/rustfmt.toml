@@ -1,0 +1,2 @@
+# Defaults are the standard; only pin the style edition so formatting doesn't shift on upgrade.
+style_edition = "2024"

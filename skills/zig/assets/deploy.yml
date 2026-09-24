@@ -1,0 +1,39 @@
+# config/deploy.yml (Kamal 2) for the static Zig service. Replace every <placeholder>.
+service: tallyd
+image: <github_user>/tallyd
+
+builder:
+  arch: amd64            # or [amd64, arm64]; the Dockerfile cross-compiles, no QEMU needed
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <api.example.com>
+  app_port: 3000         # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up            # tallyd answers 200 "ok"
+    interval: 3
+    timeout: 3
+  buffering:
+    requests: true       # the proxy absorbs slow clients before they reach std.http.Server
+    max_request_body: 1_048_576   # match tallyd's 1 MiB body limit
+  ssl: true              # Let's Encrypt. Behind Cloudflare (Full strict), use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 3000
+  # secret:
+  #   - DATABASE_URL

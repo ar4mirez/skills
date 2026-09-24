@@ -1,0 +1,54 @@
+# config/deploy.yml (Kamal 2) for a Go service. Replace every <placeholder>.
+service: links
+image: <github_user>/links
+
+builder:
+  arch: amd64
+  args:
+    VERSION: <%= `git rev-parse --short HEAD`.strip %>
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <links.example.com>
+  app_port: 8080           # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up              # 200 only when the database answers
+    interval: 3
+  ssl: true                # Let's Encrypt. Behind Cloudflare (proxied, Full (strict)), use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true  # keep X-Forwarded-For when ssl is on (client IP arrives in CF-Connecting-IP)
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 8080
+    LOG_LEVEL: info
+  secret:
+    - DATABASE_URL
+
+# The app drains for 8s on SIGTERM; Docker's stop timeout for proxied roles is 10s.
+# kamal-proxy has already drained in-flight requests (drain_timeout, default 30s) by then.
+
+accessories:
+  db:
+    image: postgres:18
+    host: <db_ip>
+    port: "127.0.0.1:5432:5432"
+    env:
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql
+
+# Migrations: .kamal/hooks/pre-deploy runs `/links migrate` from the new image before it boots.

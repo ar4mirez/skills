@@ -1,0 +1,27 @@
+[package]
+name = "acme-core"
+description = "Domain types for Acme short links: slugs and base62 short codes."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+# Optional integrations stay behind features so library users pay only for what they use.
+serde = ["dep:serde"]
+
+[dependencies]
+serde = { workspace = true, optional = true }
+thiserror.workspace = true
+
+[dev-dependencies]
+criterion.workspace = true
+proptest.workspace = true
+
+[[bench]]
+name = "codec"
+harness = false
+
+[lints]
+workspace = true

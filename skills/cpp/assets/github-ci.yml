@@ -1,0 +1,95 @@
+# CI gate: format, lint, ASan+UBSan, TSan, fuzz smoke, release. Zero warnings (-Werror here only).
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Keep in sync with "builtin-baseline" in vcpkg.json.
+  VCPKG_COMMIT: 9e593bb18ea69cc5095e012465dcd675a822ed0d
+  VCPKG_ROOT: ${{ github.workspace }}/../vcpkg
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/../vcpkg-cache
+  CC: gcc-14
+  CXX: g++-14
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [asan, tsan, release]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y g++-14 pkg-config
+          pip install cmake==4.4.3 ninja
+      - name: vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" checkout "$VCPKG_COMMIT"
+          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ runner.os }}-${{ matrix.preset }}-${{ hashFiles('vcpkg.json') }}
+      - name: TSan needs lower mmap ASLR entropy on recent kernels
+        if: matrix.preset == 'tsan'
+        run: sudo sysctl vm.mmap_rnd_bits=28
+      - run: cmake --preset ${{ matrix.preset }} -DACME_WARNINGS_AS_ERRORS=ON
+      - run: cmake --build --preset ${{ matrix.preset }}
+      - if: matrix.preset != 'release'
+        run: ctest --preset ${{ matrix.preset }}
+
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - name: Tools
+        run: |
+          sudo apt-get update && sudo apt-get install -y g++-14 pkg-config
+          pip install cmake==4.4.3 ninja clang-format==23.1.1 clang-tidy==22.1.8
+      - name: clang-format
+        run: git ls-files '*.cpp' '*.hpp' | xargs clang-format --dry-run -Werror
+      - name: vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" checkout "$VCPKG_COMMIT"
+          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+          mkdir -p "$VCPKG_DEFAULT_BINARY_CACHE"
+      - uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-${{ runner.os }}-dev-${{ hashFiles('vcpkg.json') }}
+      - run: cmake --preset dev
+      - name: clang-tidy
+        run: git ls-files 'libs/*.cpp' 'apps/*.cpp' 'tests/*.cpp' | xargs -P 4 -n 1 clang-tidy -p build/dev --quiet
+
+  fuzz:
+    runs-on: ubuntu-24.04
+    env:
+      CC: clang
+      CXX: clang++
+    steps:
+      - uses: actions/checkout@v5
+      - run: pip install cmake==4.4.3 ninja
+      - name: Build fuzzer (no vcpkg needed: tests and server off)
+        run: |
+          cmake -S . -B build/fuzz -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DACME_BUILD_FUZZERS=ON -DACME_BUILD_TESTS=OFF -DACME_BUILD_SERVER=OFF
+          cmake --build build/fuzz
+      - name: Fuzz for 60 seconds
+        run: |
+          mkdir -p corpus
+          ./build/fuzz/fuzz/acme_fuzz_wordcount -max_total_time=60 corpus/

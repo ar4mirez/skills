@@ -1,0 +1,11 @@
+find_package(httplib CONFIG REQUIRED)
+
+add_executable(acme_wc_server main.cpp)
+target_link_libraries(acme_wc_server PRIVATE acme::wordcount acme::options httplib::httplib)
+set_target_properties(acme_wc_server PROPERTIES OUTPUT_NAME wc-server)
+# Mostly-static release binary: libstdc++/libgcc linked in, glibc stays dynamic
+# (fully static glibc breaks getaddrinfo/NSS). Runs on distroless/cc.
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  target_link_options(acme_wc_server PRIVATE -static-libstdc++ -static-libgcc)
+endif()
+install(TARGETS acme_wc_server)

@@ -257,6 +257,11 @@ Templates (`assets/`):
   `assets/BridgeButtonComponent.kt`: a matching Stimulus, Swift, and Kotlin
   bridge component.
 
+Scripts ship with this skill, not with the user's project. Run them from
+this skill's directory against the user's path, and report findings in
+terms of the user's files. Never tell the user to run a skill script as if
+it were in their repo.
+
 Scripts (Ruby stdlib, non-interactive, `--help`):
 - `scripts/rails_audit.rb`: static health check of a Rails app directory.
   Exits 1 when high-severity findings exist.

@@ -1,0 +1,67 @@
+{
+  "skill_name": "rust",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're starting a new Rust backend: a URL-shortener API plus an admin CLI, sharing domain logic. The plan is one crate with everything in main.rs, actix-web, Diesel, `Box<dyn Error>` everywhere, env config via lazy_static + dotenv, tests later, and deploy by copying the debug binary onto an Alpine VM. Team of two. Sanity-check this and propose the layout and stack.",
+      "expected_output": "An opinionated redesign: a Cargo virtual workspace (resolver 3, edition 2024, rust-toolchain.toml pin, [workspace.dependencies] + [workspace.lints] inherited by each member, committed Cargo.lock) with crates/<app>-core (domain newtypes, thiserror errors, no I/O), <app>-cli (clap derive, anyhow, testable run()), and <app>-api (axum 0.8 + tower-http + tracing, lib.rs exposing app(state) plus a thin main.rs). sqlx with compile-time checked query! macros, committed .sqlx/ and embedded migrations instead of Diesel; thiserror in libraries and anyhow in binaries instead of Box<dyn Error>; a typed Config parsed once from env with std instead of lazy_static/dotenv at runtime; tests from day one (unit, proptest, #[sqlx::test] against real Postgres); release builds with LTO in a cargo-chef Docker image on distroless (not a glibc binary on Alpine), Kamal 2 with a /up route and graceful SIGTERM shutdown. Short reasons for each swap and first commands.",
+      "files": [],
+      "assertions": [
+        "Proposes a Cargo workspace with a shared core/domain library crate plus separate CLI and API binary crates",
+        "Mentions workspace-level dependency and lint inheritance ([workspace.dependencies] / [workspace.lints]) and/or an explicit resolver = \"3\" with edition 2024",
+        "Recommends thiserror for library errors and anyhow for binaries instead of Box<dyn Error>",
+        "Recommends axum (with tokio/tower) for the HTTP service, or justifies keeping actix-web",
+        "Recommends sqlx with compile-time checked queries and migrations, or justifies keeping Diesel",
+        "Replaces lazy_static/dotenv runtime config with a typed config struct read once at startup (and/or std LazyLock)",
+        "Flags shipping a debug build and a glibc binary on Alpine; recommends a release build and a distroless (or musl static) image",
+        "Includes testing from the start (unit/integration, property tests, or real-database tests)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review our Rust workspace at evals/files/flawed_workspace and tell me what to fix first.",
+      "expected_output": "A severity-ranked review. Critical/high: SQL built with format! (injection), the std Mutex guard `hits` held across .await in `product` (!Send, deadlock), std::thread::sleep and std::fs::read_to_string inside the async `report` handler, `/products/:name` route syntax that panics on axum 0.8, std::env::set_var at runtime (unsafe in 2024), hard-coded Postgres credentials, `unsafe { get_unchecked(0) }` without a SAFETY comment (and UB on empty input), the Alpine runtime with a glibc debug binary. Medium: virtual workspace without resolver, api crate not inheriting [workspace.lints], anyhow and expect/unwrap in the core library, regex = \"*\", no Cargo.lock, sqlx macros without .sqlx/, openssl dependency, debug build in Docker. Low: edition 2021, tokio full, lazy_static, async-trait, Arc<PgPool>, println! in the library, version pins not inherited, no rust-toolchain.toml/deny.toml, untuned release profile, root container. Concrete fixes with code.",
+      "files": ["evals/files/flawed_workspace"],
+      "assertions": [
+        "Flags the SQL built with format! as SQL injection and recommends bind parameters or query! macros",
+        "Flags the std Mutex guard held across .await in the product handler",
+        "Flags std::thread::sleep and/or std::fs::read_to_string blocking inside async handlers",
+        "Flags the `/products/:name` route as axum 0.7 syntax that panics on axum 0.8 (use `/products/{name}`)",
+        "Flags the unsafe get_unchecked without a SAFETY comment (and/or that it is UB on empty input)",
+        "Flags the hard-coded database credentials and/or std::env::set_var",
+        "Flags the Dockerfile: debug build and/or glibc binary on Alpine",
+        "Flags workspace hygiene: missing resolver and/or the api crate not inheriting [workspace.lints]",
+        "Flags the core library using anyhow and/or panicking with unwrap/expect",
+        "Orders findings by severity"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My axum handler won't compile: `the trait bound fn(State<AppState>) -> impl Future<Output = String> {bump}: Handler<_, _> is not satisfied`. Here's the code:\n\n```rust\nasync fn bump(State(state): State<AppState>) -> String {\n    let mut n = state.counter.lock().unwrap();\n    *n += 1;\n    state.audit.record(*n).await;\n    format!(\"{}\", *n)\n}\n```\n`counter` is `Arc<std::sync::Mutex<u64>>`. Should I just switch to tokio::sync::Mutex everywhere?",
+      "expected_output": "Explains that the std MutexGuard is held across `.await`, which makes the future !Send so axum rejects the handler; recommends #[axum::debug_handler] to surface the real error; fixes it by scoping the guard in a block (copying the value out) before awaiting, keeping std::sync::Mutex (faster, Tokio's own guidance) and reserving tokio::sync::Mutex for locks that must be held across await; optionally suggests an AtomicU64 for a plain counter. Shows corrected code.",
+      "files": [],
+      "assertions": [
+        "Identifies the std MutexGuard held across .await as making the future !Send",
+        "Fixes it by dropping/scoping the guard before the .await (shows code)",
+        "Advises against switching to tokio::sync::Mutex everywhere, reserving it for locks held across await",
+        "Mentions #[axum::debug_handler] for a clearer error, or suggests AtomicU64 for a simple counter"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a 'tags' feature to our axum + sqlx short-link service (same layout as the reference: crates/acme-api with lib.rs, links.rs, error.rs, migrations). Users can attach tags to a link (POST /links/{code}/tags with a list of tag names) and list links by tag (GET /tags/{name}/links). Show the migration, the module, and tests.",
+      "expected_output": "A new migration (tags table with unique normalized name plus a link_tags join table with foreign keys and a composite primary key); a tags.rs module with a Router<AppState>, axum 0.8 `{param}` routes, request/response structs with serde (deny_unknown_fields), tag names validated via a newtype (reusing Slug-style parsing) in the core crate, handlers returning Result<_, ApiError> with `?`, sqlx query!/query_as! macros with bind parameters, the multi-row insert in a transaction (upsert tags with ON CONFLICT, then insert join rows), 404 for an unknown code; merged into app(); #[sqlx::test] HTTP tests via oneshot covering success, validation (422), and not found; a reminder to rerun cargo sqlx prepare --workspace.",
+      "files": [],
+      "assertions": [
+        "Adds a SQL migration with a join table using foreign keys and a uniqueness constraint",
+        "Uses axum 0.8 path syntax (`/links/{code}/tags`, `/tags/{name}/links`), not `/:code`",
+        "Uses sqlx query!/query_as! macros (or bind parameters) and never format!-built SQL",
+        "Wraps the multi-statement write in a transaction",
+        "Validates tag names through a type/constructor rather than ad-hoc string checks in the handler",
+        "Returns errors via the ApiError type with ? (404 for unknown code, 422 for invalid input)",
+        "Includes #[sqlx::test] (or real-database) HTTP tests using the router",
+        "Mentions regenerating the .sqlx offline data (cargo sqlx prepare)"
+      ]
+    }
+  ]
+}

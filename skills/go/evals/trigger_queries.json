@@ -1,0 +1,22 @@
+[
+  {"query": "how should I structure a Go REST API project? cmd, internal, pkg?", "should_trigger": true},
+  {"query": "my goroutines leak when the client disconnects, how do I fix it", "should_trigger": true},
+  {"query": "set up golangci-lint v2 and govulncheck in GitHub Actions for my go module", "should_trigger": true},
+  {"query": "is gin or chi better than net/http in 2026?", "should_trigger": true},
+  {"query": "go test -race reports a data race in my worker pool", "should_trigger": true},
+  {"query": "build a static golang binary and ship it in a distroless docker image with kamal", "should_trigger": true},
+  {"query": "should I use encoding/json/v2 now? what changed from v1", "should_trigger": true},
+  {"query": "review this handler: func h(w http.ResponseWriter, r *http.Request) { ctx := context.Background(); ... }", "should_trigger": true},
+  {"query": "write a fuzz test and a benchmark for my URL parser in Go", "should_trigger": true},
+  {"query": "sqlc vs gorm for postgres in a new golang service", "should_trigger": true},
+  {"query": "Write a Rust Axum service with SQLx and Tokio", "should_trigger": false},
+  {"query": "Write a Helm chart template with Go template range and if blocks", "should_trigger": false},
+  {"query": "Build a Hugo theme partial for a blog list page", "should_trigger": false},
+  {"query": "Explain the rules of the board game Go and how capturing works", "should_trigger": false},
+  {"query": "Build an Elysia API on Bun with Eden Treaty", "should_trigger": false},
+  {"query": "Set up a Kubernetes HPA for my deployment based on CPU", "should_trigger": false},
+  {"query": "Write a Python asyncio worker pool with aiohttp", "should_trigger": false},
+  {"query": "Configure Terraform for an AWS RDS Postgres instance", "should_trigger": false},
+  {"query": "Kotlin coroutines vs Java virtual threads for a backend", "should_trigger": false},
+  {"query": "Set up a Rails 8 app with Solid Queue and Kamal", "should_trigger": false}
+]

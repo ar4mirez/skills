@@ -1,0 +1,69 @@
+{
+  "skill_name": "go",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Starting a new Go backend for a small SaaS (team of 2). Plan: Gin for routing, GORM on Postgres, logrus, viper for config, a pkg/ and utils/ folder, testify + mockery for tests, and deploy with `go run main.go` inside the golang:latest image on a VM. Go version will be whatever brew gives us. Sanity-check this and propose the layout and stack.",
+      "expected_output": "An opinionated redesign: Go 1.27 with `go 1.27.0` in go.mod; one module with cmd/<app>/main.go (thin main calling run(ctx,...)) and internal/<domain>/ packages, no pkg/ or utils; net/http ServeMux with method/wildcard patterns instead of Gin; pgx/pgxpool + sqlc + goose (embedded migrations) instead of GORM; log/slog instead of logrus; env parsed once in main instead of viper; the standard testing package with table-driven tests, fakes via consumer-defined interfaces, httptest, and a real Postgres instead of testify/mockery; golangci-lint v2 + govulncheck + go test -race in CI; a CGO_ENABLED=0 -trimpath static binary on distroless/static-debian13:nonroot deployed with Kamal 2 (/up health, graceful SIGTERM shutdown) behind Cloudflare. Short reasons for each swap and first commands.",
+      "files": [],
+      "assertions": [
+        "Recommends net/http with Go 1.22+ ServeMux method and wildcard patterns instead of Gin",
+        "Recommends pgx (pgxpool) with sqlc-generated queries instead of GORM, and a migration tool such as goose",
+        "Recommends log/slog instead of logrus",
+        "Proposes cmd/<app>/main.go plus internal/ packages and rejects pkg/ and utils/ packages",
+        "Recommends the standard testing package (table-driven tests, httptest, fakes or a real Postgres) over testify/mockery, or justifies any kept dependency",
+        "Rejects `go run` in a golang image and recommends a static CGO_ENABLED=0 binary in a minimal (distroless or scratch) image",
+        "Recommends pinning a current Go version (1.26 or 1.27) in go.mod rather than whatever brew installs",
+        "Mentions go test -race and a linter (golangci-lint or staticcheck) in CI"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review our orders service at evals/files/flawed_service and tell me what to fix first.",
+      "expected_output": "A severity-ranked review. High: SQL built with fmt.Sprintf and string concatenation (injection); hard-coded DB password; http.ListenAndServe with no timeouts or graceful shutdown; InsecureSkipVerify client; data race on h.count and wg.Add inside goroutines; fire-and-forget goroutine in the handler using the default client; Dockerfile building without CGO_ENABLED=0 into scratch. Medium: %v instead of %w; err == sql.ErrNoRows; err.(*json.SyntaxError) type assertion; err.Error() sent to clients; context.Background() in the handler; ctx stored in the Store struct; unbounded io.ReadAll(r.Body); defer tx.Rollback() in a loop; panic and log.Fatal in pkg/utils; DefaultServeMux and pprof blank import; local replace; missing go.sum; Unmarshal error ignored for non-syntax errors. Low: go 1.21 directive, tools.go, pkg/utils, ioutil, pkg/errors, logrus, lib/pq, gorilla/mux, GetDB getter, ctx not first, time.Sleep in tests, CI without -race, missing -trimpath. Each with a concrete fix.",
+      "files": ["evals/files/flawed_service"],
+      "assertions": [
+        "Flags the SQL built with fmt.Sprintf and/or string concatenation as SQL injection and recommends placeholders or sqlc",
+        "Flags the hard-coded database password",
+        "Flags http.ListenAndServe without timeouts and/or without graceful shutdown",
+        "Flags InsecureSkipVerify: true",
+        "Flags the data race (h.count++ from goroutines and/or wg.Add inside the goroutine)",
+        "Flags the fire-and-forget goroutine in CreateOrder (unowned, uses the default client with no timeout or context)",
+        "Flags fmt.Errorf with %v (should be %w) and/or err == sql.ErrNoRows / the error type assertion",
+        "Flags the Dockerfile building without CGO_ENABLED=0 for a scratch image",
+        "Flags context.Background() in the handler and/or the context stored in the Store struct",
+        "Orders findings by severity"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our Go API sometimes returns 500s during deploys and I see 'context canceled' in logs right when Kamal restarts the container. main.go does `go srv.ListenAndServe()` then `<-sigCh` and `os.Exit(0)`. Also the handlers call `context.Background()` for DB queries. How should shutdown work?",
+      "expected_output": "Explains the fix: signal.NotifyContext for SIGINT/SIGTERM in main; an http.Server with ReadHeaderTimeout/ReadTimeout/WriteTimeout/IdleTimeout; serve on a listener in a goroutine and on ctx.Done() call srv.Shutdown with a deadline shorter than Docker's 10s stop timeout (Kamal proxied roles); treat http.ErrServerClosed as success; don't os.Exit (defers like pool.Close are skipped); BaseContext with context.WithoutCancel so in-flight requests aren't cancelled instantly; handlers use r.Context() instead of context.Background(); /up health check that pings the DB so kamal-proxy only switches when ready; kamal-proxy drains before SIGTERM. Shows code.",
+      "files": [],
+      "assertions": [
+        "Uses signal.NotifyContext (or equivalent) to turn SIGTERM into context cancellation",
+        "Calls http.Server.Shutdown with a timeout and treats http.ErrServerClosed as a normal exit",
+        "Keeps the shutdown drain under the container stop timeout (Docker/Kamal default 10s) or sets stop_timeout explicitly",
+        "Recommends r.Context() in handlers instead of context.Background()",
+        "Sets server timeouts such as ReadHeaderTimeout",
+        "Explains that os.Exit skips deferred cleanup",
+        "Mentions a /up health endpoint for kamal-proxy"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I need a Go function that fetches 5,000 product prices from a supplier API and writes them to Postgres. Right now it does `for _, id := range ids { go fetch(id) }` with a global map and a mutex-less counter, and it takes the supplier down. Rewrite it properly with tests.",
+      "expected_output": "Bounded concurrency with errgroup.WithContext + SetLimit (or a fixed worker pool), ctx passed to every call, results written to per-index slots or collected via a channel/mutex, no global state, an http.Client with a Timeout and http.NewRequestWithContext, retry with backoff and jitter only for transient errors, errors wrapped with %w, DB writes batched in a transaction via pgx (sqlc), and tests: table-driven with a fake supplier via httptest, a test proving the concurrency limit is respected, synctest for backoff timing, and go test -race.",
+      "files": [],
+      "assertions": [
+        "Bounds concurrency with errgroup SetLimit, a semaphore, or a fixed worker pool",
+        "Passes a context.Context through and cancels remaining work on failure or shutdown",
+        "Removes the data race (no unsynchronized shared map or counter; per-index writes, channels, mutex, or atomics)",
+        "Uses an http.Client with a timeout and context-aware requests rather than http.Get/DefaultClient",
+        "Wraps errors with %w and returns them rather than logging and continuing silently",
+        "Includes tests using httptest (or a fake) and mentions or uses go test -race",
+        "Writes to Postgres with parameterized queries (pgx/sqlc) and batching or a transaction"
+      ]
+    }
+  ]
+}

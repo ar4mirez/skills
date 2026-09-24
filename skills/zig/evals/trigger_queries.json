@@ -1,0 +1,22 @@
+[
+  {"query": "set up a new zig project with a library, a cli and tests", "should_trigger": true},
+  {"query": "error: root source file struct 'std' has no member named 'io' after upgrading zig", "should_trigger": true},
+  {"query": "how do I write an http server in zig 0.16 with std.http.Server", "should_trigger": true},
+  {"query": "my build.zig says no field named 'root_source_file' in ExecutableOptions", "should_trigger": true},
+  {"query": "use zig cc to cross compile my C program for aarch64 linux from a mac", "should_trigger": true},
+  {"query": "review this zig code for memory leaks, it uses an ArenaAllocator and ArrayList", "should_trigger": true},
+  {"query": "how do io.async and Io.Group work in the new zig io interface?", "should_trigger": true},
+  {"query": "deploy a zig service as a static binary with docker and kamal", "should_trigger": true},
+  {"query": "call a C library from zig, is @cImport still the way?", "should_trigger": true},
+  {"query": "fuzz test my zig parser, the old []const u8 fuzz signature doesn't compile", "should_trigger": true},
+  {"query": "write a Rust CLI with clap and cross-compile it with cross", "should_trigger": false},
+  {"query": "set up CMake for a C++20 project with vcpkg", "should_trigger": false},
+  {"query": "write a Go HTTP server with graceful shutdown", "should_trigger": false},
+  {"query": "explain zig-zag encoding in protobuf varints", "should_trigger": false},
+  {"query": "fix this segfault in my C program that uses malloc and free", "should_trigger": false},
+  {"query": "configure clangd for my C project", "should_trigger": false},
+  {"query": "Deploy my Bun API as a single binary with Docker and Kamal", "should_trigger": false},
+  {"query": "write a zigzag level-order traversal of a binary tree in Python", "should_trigger": false},
+  {"query": "compile Nim to C and link it statically with musl", "should_trigger": false},
+  {"query": "Odin vs Jai vs C3 for a game engine, which should I learn?", "should_trigger": false}
+]

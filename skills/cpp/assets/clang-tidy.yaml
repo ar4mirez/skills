@@ -1,0 +1,42 @@
+# Curated: high-signal families on, noisy or style-only checks off. Each disable has a reason.
+Checks: >
+  -*,
+  bugprone-*,
+  cert-err33-c,
+  cert-err58-cpp,
+  concurrency-*,
+  cppcoreguidelines-*,
+  misc-const-correctness,
+  misc-definitions-in-headers,
+  misc-misplaced-const,
+  misc-redundant-expression,
+  misc-unused-parameters,
+  misc-use-internal-linkage,
+  modernize-*,
+  performance-*,
+  readability-braces-around-statements,
+  readability-container-size-empty,
+  readability-else-after-return,
+  readability-make-member-function-const,
+  readability-redundant-*,
+  readability-simplify-boolean-expr,
+  -bugprone-easily-swappable-parameters,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-avoid-do-while,
+  -cppcoreguidelines-pro-bounds-avoid-unchecked-container-access,
+  -modernize-use-trailing-return-type,
+  -modernize-use-nodiscard,
+  -readability-implicit-bool-conversion
+# Why the disables: swappable-parameters and magic-numbers fire on nearly every
+# function; pointer arithmetic is unavoidable at C API edges (argv, fuzzer input);
+# operator[] is bounds-checked by the hardened standard library (see
+# ProjectOptions.cmake); trailing return types are a style choice; we add [[nodiscard]] deliberately;
+# `if (!expected)` is the idiomatic std::expected test.
+WarningsAsErrors: '*'
+HeaderFilterRegex: '(libs|apps|tests)/.*'
+CheckOptions:
+  - key: cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor
+    value: true
+  - key: performance-unnecessary-value-param.AllowedTypes
+    value: 'std::stop_token'

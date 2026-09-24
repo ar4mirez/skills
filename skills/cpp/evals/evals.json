@@ -1,0 +1,68 @@
+{
+  "skill_name": "cpp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Starting a new C++ project at work: a parsing library, a CLI on top of it, and later a small HTTP service. Plan so far: C++17, a Makefile with -O2, header-only deps copied into third_party/, Catch2 v2 single header, raw pointers for the parse tree because 'smart pointers are slow', exceptions for every parse error, and we'll add sanitizers 'if we see crashes'. Deploy the service as a Ubuntu image with g++ in it. Sanity-check this and give me the layout and first commands.",
+      "expected_output": "An opinionated redesign: C++23 with extensions off; CMake 4.x (floor 3.28) target-based with CMakePresets.json (dev/asan/tsan/release); vcpkg manifest with builtin-baseline instead of vendored third_party; libs/ + apps/ + tests/ layout with thin apps; GoogleTest via gtest_discover_tests/CTest (or Catch2 v3, not v2 single header); unique_ptr/values/containers for the parse tree (unique_ptr has no overhead over a raw pointer); std::expected for parse errors with exceptions only for exceptional cases; ASan+UBSan and TSan presets from day one plus a libFuzzer target for the parser; warnings/clang-tidy/clang-format; OpenSSF hardening; a multi-stage Docker build onto distroless/cc with a mostly-static binary and Kamal. First commands (scaffold, cmake --workflow --preset asan).",
+      "files": [],
+      "assertions": [
+        "Recommends C++23 (not C++17) with CMAKE_CXX_EXTENSIONS OFF or equivalent",
+        "Recommends CMake with CMakePresets.json including sanitizer presets instead of a hand-written Makefile",
+        "Recommends vcpkg manifest mode with a pinned baseline instead of vendoring headers into third_party",
+        "Rejects raw owning pointers for the parse tree in favor of unique_ptr/values/containers, noting unique_ptr has no runtime overhead",
+        "Recommends std::expected (or equivalent error values) for parse errors rather than exceptions for every error",
+        "Recommends sanitizers (ASan/UBSan, TSan) in CI from the start and a fuzz target for the parser",
+        "Recommends a multi-stage build onto a minimal (distroless) runtime image instead of shipping a compiler image",
+        "Proposes a layout that separates library, apps, and tests with logic in the library"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review our inventory service at evals/files/legacy_service and tell me what to fix first.",
+      "expected_output": "A severity-ranked review. Critical: Registry::label() returns a string_view to a local std::string (dangling); `std::string_view prefix = make_prefix(id) + \":\"` dangles; Registry owns raw pointers (Shape** items_, char* label_) with manual delete/free and is copied in main (`Registry copy = *registry`) -> double free; Shape has virtual functions but no virtual destructor and is deleted through Shape*; data race: detached threads keep calling registry->add after main deletes the registry, `volatile bool running` is not synchronization, and total_area/dump read without the lock; strcpy/malloc. High: manual mutex lock/unlock (use scoped_lock), naked new/delete, detach (use jthread + stop_token). Build: cmake_minimum_required(3.1) is a hard error in CMake 4, no CMAKE_CXX_STANDARD and -std=gnu++17 via CMAKE_CXX_FLAGS, global include_directories/add_definitions, -ffast-math and unconditional -Werror, file(GLOB), hard-coded build type, no presets/warnings/sanitizers, vcpkg.json without baseline, using namespace std and missing include guard in shape.h, bits/stdc++.h, C-style casts, NULL, endl in loop; Dockerfile ships gcc:14. Concrete fixes with code.",
+      "files": ["evals/files/legacy_service"],
+      "assertions": [
+        "Flags Registry::label() returning a string_view of a local string as dangling",
+        "Flags the string_view bound to the temporary from make_prefix(id) + \":\" as dangling",
+        "Flags the raw owning pointers in Registry and the copy (`Registry copy = *registry`) causing a double free, recommending unique_ptr/vector (Rule of Zero)",
+        "Flags Shape's missing virtual destructor with deletion through a base pointer",
+        "Flags the data races: detached threads outliving the registry and/or volatile used as a stop flag, recommending jthread/stop_token/atomic",
+        "Flags manual mutex lock()/unlock() and recommends std::scoped_lock",
+        "Flags cmake_minimum_required(3.1) as an error in CMake 4 and/or the missing CMAKE_CXX_STANDARD with global CMAKE_CXX_FLAGS",
+        "Flags using namespace std in a header and/or <bits/stdc++.h>",
+        "Recommends sanitizers (ASan/UBSan/TSan) to confirm and prevent these bugs",
+        "Orders findings by severity with concrete fixes"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our C++ service crashes randomly under load and ASan in CI is green. It's a thread pool where the pool class has members `std::vector<std::thread> workers_; std::mutex m_; std::condition_variable cv_; std::queue<std::function<void()>> q_; bool stop_ = false;` and a destructor that sets stop_ = true and joins. Also I can't submit lambdas that capture a unique_ptr. What's wrong and how should it look?",
+      "expected_output": "Diagnoses: members are destroyed in reverse order, but more importantly the destructor sets stop_ without holding the mutex and without notify_all (lost wakeup / race), threads may block forever or race; ASan doesn't detect races, run TSan. std::function requires copyable callables, so move-only lambdas fail; use std::packaged_task<void()> (move_only_function isn't in libc++). Recommends std::jthread + stop_token + condition_variable_any::wait(lock, stoken, pred), declaring workers_ last so they join before the queue/mutex die (Rule of Zero, no hand-written destructor), scoped_lock, returning futures with exception propagation, and a TSan preset in CI. Gives complete code.",
+      "files": [],
+      "assertions": [
+        "Explains that ASan does not detect data races and recommends ThreadSanitizer (a tsan build/preset)",
+        "Identifies the unsynchronized stop_ write and/or missing notify as a race or lost-wakeup bug",
+        "Explains that std::function requires copyable callables and proposes packaged_task<void()> or an equivalent move-only wrapper",
+        "Recommends std::jthread with stop_token (and condition_variable_any stop-aware wait) instead of a manual stop flag",
+        "Mentions member destruction order: threads must be declared last (or joined before other members are destroyed)",
+        "Provides complete corrected pool code that propagates task exceptions via futures"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a tiny HTTP endpoint to our C++23 word-count tool: POST /count returns the top N words, and it must run behind Kamal with Cloudflare. Show the CMake, the code, and the deploy bits.",
+      "expected_output": "A service target in apps/wc-server that links the existing library and cpp-httplib from vcpkg (default-features false) via find_package(httplib CONFIG) and target_link_libraries; GET /up health route; request body limit; query param parsed with from_chars/std::expected returning 400 on bad input; graceful SIGTERM via pthread_sigmask + sigwait thread calling server.stop(); socket options avoiding SO_REUSEPORT; PORT from env; mostly-static link on Linux; multi-stage Dockerfile onto distroless/cc-debian13 nonroot; Kamal deploy.yml with proxy app_port and healthcheck /up and Cloudflare Full (strict)/Origin CA notes; tests for the library logic, not sockets.",
+      "files": [],
+      "assertions": [
+        "Adds the dependency through vcpkg.json (not vendored) and links it with find_package + target_link_libraries",
+        "Keeps request logic in the library (transport-agnostic) with the HTTP layer thin",
+        "Includes a /up health route and sets Kamal proxy app_port (not relying on the default 80) and healthcheck",
+        "Bounds the request body size and validates the N parameter, returning 4xx on bad input",
+        "Handles SIGTERM gracefully without calling non-async-signal-safe code from a signal handler",
+        "Uses a multi-stage Dockerfile with a minimal runtime image (distroless or scratch) and a non-root user",
+        "Mentions Cloudflare in front (Full (strict) SSL / Origin CA or equivalent)"
+      ]
+    }
+  ]
+}

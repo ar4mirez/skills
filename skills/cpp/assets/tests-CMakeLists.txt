@@ -1,0 +1,14 @@
+find_package(GTest CONFIG REQUIRED)
+include(GoogleTest)
+
+add_executable(acme_tests wordcount_test.cpp thread_pool_test.cpp)
+target_link_libraries(acme_tests PRIVATE acme::wordcount acme::options GTest::gtest_main)
+# One CTest test per TEST(): parallel ctest, per-test timeouts, precise failure reports.
+gtest_discover_tests(acme_tests DISCOVERY_MODE PRE_TEST)
+
+# End-to-end check of the CLI's exit codes.
+add_test(NAME cli.usage_error COMMAND acme_wc)
+set_tests_properties(cli.usage_error PROPERTIES WILL_FAIL TRUE)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/sample.txt "The cat and the hat.\nTHE end\n")
+add_test(NAME cli.counts_file COMMAND acme_wc --top 1 ${CMAKE_CURRENT_BINARY_DIR}/sample.txt)
+set_tests_properties(cli.counts_file PROPERTIES PASS_REGULAR_EXPRESSION "^the 3\n$")
