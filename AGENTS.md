@@ -14,7 +14,7 @@ skills/<skill-name>/          one directory per skill (the unit that gets instal
   scripts/                    self-contained, non-interactive executables with --help
   evals/evals.json            output-quality test cases (+ evals/files/ fixtures)
   evals/trigger_queries.json  ~20 should/shouldn't-trigger queries for the description
-template/                     starting point copied by scripts/new-skill.sh
+template/                     skeleton (SKILL.md.tmpl, so installers never list it) copied by scripts/new-skill.sh
 scripts/                      repo tooling (validator, scaffolder, local linking)
 tests/                        unit tests for bundled skill scripts
 .claude-plugin/marketplace.json  Claude Code marketplace: one plugin entry per skill

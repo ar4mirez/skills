@@ -23,6 +23,7 @@ fi
 
 mkdir -p "$dest"
 cp -R "$root/template/." "$dest/"
+mv "$dest/SKILL.md.tmpl" "$dest/SKILL.md"
 sed -i.bak "s/^name: skill-name$/name: $name/; s/\"skill_name\": \"skill-name\"/\"skill_name\": \"$name\"/" \
   "$dest/SKILL.md" "$dest/evals/evals.json"
 rm -f "$dest/SKILL.md.bak" "$dest/evals/evals.json.bak"
