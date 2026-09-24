@@ -1,0 +1,102 @@
+{
+  "skill_name": "php-laravel",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm starting a B2B invoicing SaaS with Laravel. It's me and one other dev, deploying to a couple of Hetzner boxes. My plan: Laravel as a pure JSON API, a separate Next.js SPA, the repository pattern over Eloquent with interfaces for everything, Redis + Horizon from day one, PHPUnit, and Kubernetes. Thoughts? What stack should I use?",
+      "expected_output": "An opinionated push toward the house stack: one Laravel 13 app on PHP 8.5 with Livewire 4 (or Inertia 3 if the team is React-first) instead of a separate SPA repo; Action classes + Form Requests + policies instead of repositories over Eloquent; PostgreSQL with the database queue/cache first and Redis + Horizon only at measured volume; Pest 5 with arch tests instead of PHPUnit; Larastan level max + Pint + Rector gate; FrankenPHP/Octane containers deployed with Kamal behind Cloudflare (or Laravel Cloud) instead of Kubernetes. Short reasons, plus concrete `laravel new` and setup commands.",
+      "files": [],
+      "assertions": [
+        "Recommends a single Laravel app with Livewire (or Inertia) over a separate Next.js SPA repo",
+        "Recommends Action classes (or equivalent single-purpose classes) and Eloquent directly instead of the repository pattern",
+        "Recommends starting with the database queue driver (or otherwise defers Redis + Horizon until measured need)",
+        "Recommends Pest (5) over PHPUnit",
+        "Recommends Larastan/PHPStan (at a high level such as max) in the CI gate",
+        "Recommends Kamal (or Laravel Cloud/Forge) over Kubernetes for a two-person team",
+        "Recommends PostgreSQL",
+        "Gives concrete setup commands (laravel new or composer create-project, plus package installs)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can you review our invoicing app? It's in evals/files/flawed_app (Laravel). Tell me what to fix first.",
+      "expected_output": "A severity-ranked review led by security: mass assignment via Invoice::create($request->all()) plus $guarded = []; SQL injection in whereRaw with interpolated $q; the Livewire delete($id) action with no authorization (IDOR) and unlocked $accountId; unescaped {!! request('q') !!} XSS; CSRF disabled with except ['*']; APP_DEBUG=true and sync queue in .env.production; show() without authorization and markPaid unscoped findOrFail; env() in ReportService; open redirect; client filename on upload; SendReceipt dispatched inside the transaction; Laravel 11 EOL; missing FK index on customer_id; renameColumn migration; Octane static cache; dd() leftover; non-resourceful actions; missing strict mode, Pest, Larastan.",
+      "files": [
+        "evals/files/flawed_app"
+      ],
+      "assertions": [
+        "Flags mass assignment (create($request->all()) and/or $guarded = []) and shows validated()/Fillable as the fix",
+        "Flags the SQL injection in the whereRaw with the interpolated search term and shows a bound parameter",
+        "Flags the Livewire delete($id) action as unauthorized (any user can delete any invoice) and shows re-query + authorize",
+        "Flags the unescaped {!! request('q') !!} output as XSS",
+        "Flags CSRF being disabled for all routes (except ['*'])",
+        "Flags APP_DEBUG=true in .env.production",
+        "Flags env() used outside config (ReportService) and explains it returns null after config:cache",
+        "Flags the job dispatched inside DB::transaction without after-commit handling",
+        "Flags Laravel 11 as out of security support and recommends upgrading",
+        "Recommends moving markPaid/search/export verbs into resource controllers (or equivalent RESTful restructuring)",
+        "Orders findings by severity with security issues first"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "In our Laravel 13 app (multi-tenant, users belong to an account; invoices have account_id, status enum draft/sent/paid/void, amount_cents), add an API endpoint to refund a paid invoice. Refunds are full-amount only, must go to our PaymentGateway interface, and the customer should get an email. Show the code and tests.",
+      "expected_output": "A resourceful controller (e.g. InvoiceRefundController@store, POST /api/invoices/{invoice}/refunds) with a Form Request that authorizes via a policy method; a final readonly RefundInvoice action with handle() that locks the invoice (lockForUpdate) in a transaction, checks status is paid, calls the gateway (ideally with an idempotency key), updates status, and dispatches an event/notification after commit; tenant isolation via policy; a JSON resource response; Pest feature tests covering success, wrong status, another account's invoice (403), guest (401), gateway failure, and the mail being queued, with the gateway faked via the container.",
+      "files": [],
+      "assertions": [
+        "Uses a separate resourceful controller/action (e.g. store on an InvoiceRefund controller or nested route) rather than adding a custom `refund` method to InvoiceController",
+        "Puts the refund logic in a dedicated action/service class with a single entry method, not in the controller",
+        "Authorizes through a policy or Form Request authorize(), enforcing that the invoice belongs to the user's account",
+        "Locks the invoice row or uses an atomic conditional update to prevent double refunds",
+        "Sends the email/notification after the transaction commits or via a queued job/event with after-commit semantics",
+        "Includes Pest (or PHPUnit) tests covering success and a cross-tenant 403",
+        "Fakes the payment gateway in tests via the container (mock/instance/fake binding)",
+        "Handles non-paid invoices as an explicit error (e.g. a domain exception rendered as 422)"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Two production bugs in our Laravel app. 1) `config('services.acme.key')` works but in one class we do `env('ACME_KEY')` and it's null in production only. 2) Our deploy runs `php artisan optimize` and it now crashes with 'Unable to prepare route [invoices] for serialization. Another route has already been assigned name [invoices.index]' since we added routes/api.php. Tests are all green. What's going on and how do we prevent this class of bug?",
+      "expected_output": "Explains that env() returns null once config is cached (optimize caches config), so env() must only be used in config files, with config() elsewhere; explains the duplicate route name between web and API resources and fixes it with Route::name('api.') (or ->names()) on the API group; recommends running php artisan optimize (and optimize:clear) in CI and an audit/arch check for env() outside config.",
+      "files": [],
+      "assertions": [
+        "Explains that env() returns null when the configuration is cached (config:cache / optimize) and must only be called inside config files",
+        "Shows moving the value into a config file and reading it with config()",
+        "Identifies the duplicate route name between the web and API routes as the cause of the route:cache failure",
+        "Fixes it by prefixing API route names (e.g. Route::name('api.') or ->names()) rather than removing route caching",
+        "Recommends running php artisan optimize (or route:cache/config:cache) in CI so it's caught before deploy"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We're deploying our Laravel 13 app (Postgres, queues, a few scheduled tasks) to three Hetzner VMs behind Cloudflare with Kamal. Two web servers, one for workers + scheduler, Postgres on a fourth box. Give me the Dockerfile approach and config/deploy.yml, and tell me how migrations should run.",
+      "expected_output": "A FrankenPHP/Octane (or FPM) multi-stage non-root image with optimize at boot (not build); deploy.yml with web, worker (queue:work) and scheduler (schedule:work, single host) roles; proxy with Cloudflare Origin CA certificate (certificate_pem/private_key_pem) since ssl: true only works with one host, forward_headers true, healthcheck /up, app_port matching the container; Postgres accessory reached by private IP; migrations run from one host (host tag or pre-deploy/one-off) and backward compatible; trusted proxies for Cloudflare.",
+      "files": [],
+      "assertions": [
+        "Defines separate Kamal roles for web, queue worker, and scheduler, with the scheduler on a single host",
+        "Uses a Cloudflare Origin CA (custom) certificate for kamal-proxy, or explains that ssl: true (Let's Encrypt) doesn't work with multiple web hosts",
+        "Sets forward_headers / trusted proxies so the app sees real client IPs behind Cloudflare",
+        "Uses Laravel's /up health route for the proxy healthcheck",
+        "Runs php artisan optimize/config:cache at container start (runtime env), not at image build time",
+        "Runs migrations from exactly one place (one host, a tagged host, or a one-off command) rather than concurrently on every web host",
+        "Connects to the Postgres accessory by its private IP/host rather than a container name that only resolves on its own host",
+        "Builds a multi-stage image that runs as a non-root user"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Our product is a Laravel app and our team only knows PHP. Customers want iOS and Android apps with offline support and Face ID login. What's the best approach in 2026?",
+      "expected_output": "Recommends NativePHP Mobile (v4) as a separate Laravel app running on-device (embedded PHP 8.4, no server, native EDGE components, SQLite), talking to the main app's API via Sanctum tokens with expiration (or OAuth via Browser::auth), tokens in SecureStorage, biometrics plugin for Face ID, offline via local SQLite + outbox with client UUIDs, no secrets in the bundle (code is readable, cleanup_env_keys), non-destructive migrations; mentions alternatives (PWA, native clients on the same API).",
+      "files": [],
+      "assertions": [
+        "Recommends NativePHP for Mobile (Laravel running on the device) for a PHP-only team",
+        "Keeps business rules and the source of truth on the main Laravel server, with the mobile app calling its API",
+        "Recommends Sanctum tokens (ideally with expiration) or OAuth for authenticating the mobile app",
+        "Recommends storing tokens in secure storage (Keychain/Keystore/SecureStorage), not plain local storage",
+        "Warns that the app bundle (code and .env) is readable, so no secrets ship in the app",
+        "Uses local SQLite for offline data with a sync/outbox approach",
+        "Mentions the biometrics capability for Face ID"
+      ]
+    }
+  ]
+}

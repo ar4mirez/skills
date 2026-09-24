@@ -1,0 +1,82 @@
+[
+ {
+  "query": "how should I structure business logic in laravel, services, actions or fat models?",
+  "should_trigger": true
+ },
+ {
+  "query": "my eloquent dashboard runs 400 queries, how do I find the n+1",
+  "should_trigger": true
+ },
+ {
+  "query": "set up Pest arch tests and larastan level max in CI for our laravel repo",
+  "should_trigger": true
+ },
+ {
+  "query": "livewire component delete button \u2014 is public function delete($id) { Post::find($id)->delete(); } safe?",
+  "should_trigger": true
+ },
+ {
+  "query": "deploy a laravel app with octane and frankenphp using kamal behind cloudflare",
+  "should_trigger": true
+ },
+ {
+  "query": "upgrade our app from laravel 11 to 13, what's the plan",
+  "should_trigger": true
+ },
+ {
+  "query": "write a migration to rename invoices.amount to total on a 30M row postgres table without downtime",
+  "should_trigger": true
+ },
+ {
+  "query": "Filament vs building our own admin in Inertia for the back office?",
+  "should_trigger": true
+ },
+ {
+  "query": "we want an iOS app for our Laravel SaaS but only know PHP",
+  "should_trigger": true
+ },
+ {
+  "query": "queue job keeps sending the same email twice after retries, php artisan queue:work",
+  "should_trigger": true
+ },
+ {
+  "query": "write a WordPress plugin that adds a custom post type for events",
+  "should_trigger": false
+ },
+ {
+  "query": "symfony messenger vs doctrine for my symfony 7 app",
+  "should_trigger": false
+ },
+ {
+  "query": "build a Rails 8 app with Hotwire and Solid Queue",
+  "should_trigger": false
+ },
+ {
+  "query": "fix this Drupal 11 module's hook_form_alter",
+  "should_trigger": false
+ },
+ {
+  "query": "write a bash script to rotate nginx logs",
+  "should_trigger": false
+ },
+ {
+  "query": "set up a Bun + Elysia API with Drizzle",
+  "should_trigger": false
+ },
+ {
+  "query": "explain how PHP's garbage collector handles circular references",
+  "should_trigger": false
+ },
+ {
+  "query": "design a Postgres schema for a multi-tenant CRM (no framework yet)",
+  "should_trigger": false
+ },
+ {
+  "query": "convert this Python FastAPI endpoint to Go",
+  "should_trigger": false
+ },
+ {
+  "query": "write a Magento 2 observer for order placement",
+  "should_trigger": false
+ }
+]

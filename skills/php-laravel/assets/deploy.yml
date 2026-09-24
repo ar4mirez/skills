@@ -1,0 +1,74 @@
+# Kamal 2 — one image, three roles. Secrets come from .kamal/secrets.
+service: billing
+image: acme/billing
+
+servers:
+  web:
+    hosts:
+      - 10.0.0.10: migrator     # exactly one host runs migrations on boot (see env.tags)
+      - 10.0.0.11
+  worker:
+    hosts: [10.0.0.12]
+    cmd: php artisan queue:work --queue=high,default,low --sleep=1 --tries=3 --max-time=3600
+  scheduler:
+    hosts: [10.0.0.12]
+    cmd: php artisan schedule:work
+
+proxy:
+  # Multiple web hosts behind Cloudflare: use a Cloudflare Origin CA cert
+  # (Let's Encrypt via `ssl: true` only works on a single host).
+  ssl:
+    certificate_pem: CLOUDFLARE_ORIGIN_CERT
+    private_key_pem: CLOUDFLARE_ORIGIN_KEY
+  host: billing.example.com
+  app_port: 8080
+  forward_headers: true        # behind Cloudflare: trust X-Forwarded-*
+  healthcheck:
+    path: /up
+    interval: 3
+    timeout: 3
+
+registry:
+  server: ghcr.io
+  username: acme
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+
+env:
+  clear:
+    APP_ENV: production
+    APP_URL: https://billing.example.com
+    DB_CONNECTION: pgsql
+    DB_HOST: 10.0.0.20          # accessory on another host: use its private IP, not the container name
+    QUEUE_CONNECTION: database
+    CACHE_STORE: database
+    SESSION_DRIVER: database
+    LOG_CHANNEL: stderr
+  secret:
+    - APP_KEY
+    - DB_PASSWORD
+  tags:
+    migrator:
+      RUN_MIGRATIONS: "1"
+
+accessories:
+  db:
+    image: postgres:18
+    host: 10.0.0.20
+    port: "10.0.0.20:5432:5432"   # bind the private interface only; firewall it to the app hosts
+    env:
+      clear:
+        POSTGRES_DB: billing
+        POSTGRES_USER: billing
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql
+
+aliases:
+  console: app exec --interactive --reuse "php artisan tinker"
+  logs: app logs -f
+  migrate: app exec --primary --reuse "php artisan migrate --force"

@@ -45,6 +45,15 @@
       ]
     },
     {
+      "name": "php-laravel",
+      "description": "Opinionated PHP 8.5 + Laravel 13 expert: actions, Eloquent, Livewire/Inertia, Pest, Larastan, queues, Octane/FrankenPHP, Kamal, and NativePHP",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/php-laravel"
+      ]
+    },
+    {
       "name": "python",
       "description": "Opinionated modern Python expert: uv projects, ruff, strict typing, FastAPI/SQLAlchemy services, pytest, and lean container deploys",
       "source": "./",

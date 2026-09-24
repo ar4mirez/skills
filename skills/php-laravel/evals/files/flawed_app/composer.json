@@ -1,0 +1,14 @@
+{
+    "name": "acme/invoicer",
+    "type": "project",
+    "require": {
+        "php": "^8.2",
+        "laravel/framework": "^11.0",
+        "laravel/octane": "^2.5",
+        "laravel/telescope": "^5.0",
+        "livewire/livewire": "^3.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    }
+}

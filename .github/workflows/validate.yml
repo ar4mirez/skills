@@ -38,6 +38,12 @@ jobs:
         with:
           bun-version: 1.4.2
 
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.5"
+          coverage: none
+          tools: none
+
       - name: Validate skills (spec + repo conventions)
         run: python3 scripts/validate_skills.py
 

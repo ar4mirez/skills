@@ -1,0 +1,33 @@
+{
+    "require": {
+        "php": "^8.5"
+    },
+    "config": {
+        "platform": {
+            "php": "8.5.11"
+        }
+    },
+    "scripts": {
+        "lint": [
+            "pint --parallel --test",
+            "rector --dry-run --no-progress-bar",
+            "phpstan analyse --no-progress --memory-limit=1G"
+        ],
+        "fix": [
+            "rector --no-progress-bar",
+            "pint --parallel"
+        ],
+        "test": [
+            "@php artisan config:clear --ansi @no_additional_args",
+            "@php -d memory_limit=1G vendor/bin/pest --parallel --type-coverage --min=100"
+        ],
+        "check": [
+            "@composer validate --strict",
+            "@lint",
+            "@test",
+            "@php artisan optimize --ansi",
+            "@php artisan optimize:clear --ansi",
+            "@composer audit"
+        ]
+    }
+}
