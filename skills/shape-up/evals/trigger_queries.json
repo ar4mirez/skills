@@ -1,0 +1,22 @@
+[
+  {"query": "can you help me write a pitch for our betting table? the feature is bulk-editing invoices", "should_trigger": true},
+  {"query": "We keep starting projects that drag on for months with no end in sight. how do other teams set boundaries on features?", "should_trigger": true},
+  {"query": "my backlog in Linear has 900 tickets and grooming takes half a day every sprint. what should I do", "should_trigger": true},
+  {"query": "customer wants a 'calendar view' in our app — how much of that should we actually build?", "should_trigger": true},
+  {"query": "whats the difference between an appetite and an estimate", "should_trigger": true},
+  {"query": "Here's our scope list for the drafts feature: frontend, backend, bugs, polish. does this look right for the hill chart?", "should_trigger": true},
+  {"query": "we're 4 weeks into a 6 week cycle and the notifications scope hasn't moved in 8 days, what do I ask the team?", "should_trigger": true},
+  {"query": "breadboard the flow for letting clients approve a quote from an emailed link", "should_trigger": true},
+  {"query": "Our CTO wants to replace 2-week sprints with something with less planning overhead. We're 12 engineers and 3 designers. Proposal?", "should_trigger": true},
+  {"query": "deadline is friday and there's way more left than we can finish, help me decide what to cut", "should_trigger": true},
+  {"query": "We're launching a brand new product next year, how should we plan the first few months of building it with a tiny senior team?", "should_trigger": true},
+  {"query": "Set up a Jira Scrum board with story points and a velocity chart for my team", "should_trigger": false},
+  {"query": "Write a PRD for a mobile checkout redesign with user stories and acceptance criteria", "should_trigger": false},
+  {"query": "How do I run a good daily standup meeting?", "should_trigger": false},
+  {"query": "Help me estimate how many hours this database migration will take", "should_trigger": false},
+  {"query": "what's the best way to shape the data in this pandas dataframe before plotting", "should_trigger": false},
+  {"query": "Create a Kanban WIP limit policy for our support team", "should_trigger": false},
+  {"query": "Draft an OKR set for our product org for Q3", "should_trigger": false},
+  {"query": "can you summarize the basecamp API docs for creating to-do lists", "should_trigger": false},
+  {"query": "Run a customer discovery interview guide using Jobs to be Done for our CRM", "should_trigger": false}
+]

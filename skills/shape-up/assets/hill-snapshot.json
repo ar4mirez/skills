@@ -1,0 +1,13 @@
+{
+  "project": "Message Drafts",
+  "date": "2026-10-09",
+  "cycle_week": 2,
+  "cycle_weeks": 6,
+  "scopes": [
+    {"name": "Start New", "position": 100, "note": "Shipped to staging"},
+    {"name": "Save/Edit", "position": 38, "note": "Validating autosave approach"},
+    {"name": "Locate", "position": 62},
+    {"name": "Trash", "position": 5},
+    {"name": "Send", "position": 20, "note": "Never done delayed send before"}
+  ]
+}

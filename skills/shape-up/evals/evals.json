@@ -1,0 +1,71 @@
+{
+  "skill_name": "shape-up",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our biggest customer (a 40-person agency) just emailed asking us to 'add a full reporting dashboard with custom charts' to our project management SaaS. Sales wants to say yes today. I'm the PM and we're 2 designers and 5 devs. How should I handle this?",
+      "expected_output": "A shaping-first response: a soft 'interesting, maybe some day' instead of a commitment; digging into when and why the customer needed reports (the moment the workflow breaks); an explicit appetite decision (small or big batch) set before any solution; a warning that 'full dashboard' is a grab-bag; and no backlog entry.",
+      "files": [],
+      "assertions": [
+        "Advises against committing or saying yes before the work is shaped",
+        "Recommends finding the specific moment or use case behind the request (asks 'when' or 'what's really going wrong'), not collecting feature specs",
+        "Sets or asks for an appetite (a time budget such as 2 or 6 weeks) before proposing a solution, and distinguishes it from an estimate",
+        "Does not suggest adding the request to a backlog",
+        "Flags 'full reporting dashboard' as too broad and suggests narrowing it to one problem"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Can you review this pitch before Thursday's betting table? It's at evals/files/bad-pitch.md",
+      "expected_output": "A pitch review that names the concrete defects: a solution-first, story-less problem; an appetite given as an estimate and longer than one cycle; wireframe-level detail; open questions pushed to the designer; an unpatched rabbit hole; 'None' for no-gos; the '2.0' grab-bag. It recommends sending the pitch back to shaping rather than betting on it.",
+      "files": ["evals/files/bad-pitch.md"],
+      "assertions": [
+        "States the pitch is not ready for the betting table / should go back to shaping",
+        "Identifies that the appetite is an estimate (hours/months) and exceeds a six-week cycle",
+        "Identifies the problem section lacks a specific story and leads with a solution",
+        "Flags pixel/hex/wireframe detail in the solution as over-specified",
+        "Flags 'TBD / the designer will figure it out' as an unresolved hole",
+        "Flags the performance rabbit hole as listed without a patch or decision",
+        "Flags the empty/None no-gos and the '2.0' grab-bag"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "We're in week 5 of a 6-week cycle on 'Team Calendars'. Scopes: Event CRUD (done), Month Grid (downhill, ~80%), Recurring Events (still uphill, we haven't figured out editing a single occurrence), Timezone Handling (uphill), Invites Email (downhill). My CTO wants to just extend the project 3 more weeks. Is that the right call?",
+      "expected_output": "A clear recommendation against a default extension: uphill scopes at the deadline mean a hole in the shaping, so the circuit breaker applies. Scope-hammer Recurring Events and Timezones (cut, or ship without them if they're not must-haves), ship what's downhill, compared against the baseline, and put the uphill parts back on the shaping track for a future bet. An extension is only justified when all remaining work is must-have and downhill.",
+      "files": [],
+      "assertions": [
+        "Recommends against the 3-week extension",
+        "Explains that uphill work (unsolved problems) at the deadline is the key reason not to extend",
+        "States the extension criteria: remaining work must be true must-haves AND all downhill",
+        "Proposes scope hammering / cutting Recurring Events and/or Timezone Handling and shipping the rest",
+        "Suggests re-shaping the unsolved parts as a new pitch for a future betting table rather than continuing"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We just bet on the Autopay pitch (evals/files/good-pitch.md) for next cycle. Please break it into Jira tickets with estimates and assign them to Priya (design), Marco and Jun (backend) so they can start Monday.",
+      "expected_output": "A respectful push-back on pre-splitting and assigning tasks (the paper-shredder problem), explaining that the team takes the whole project and discovers its tasks. Instead: a kick-off plan, orientation expectations, a suggested first piece to integrate end to end (core, small, novel, e.g. the Autopay checkbox wired through to a saved state), and guidance that scopes will emerge around the end of week 1. If Jira is mandatory, create tickets per scope as they're discovered, owned by the team.",
+      "files": ["evals/files/good-pitch.md"],
+      "assertions": [
+        "Does not produce a full up-front task breakdown with per-person assignments and estimates as the main deliverable",
+        "Explains that the team should own the whole project and discover tasks (assign projects, not tasks)",
+        "Recommends a first vertical slice integrated end to end early (roughly the first week) and names a candidate from the pitch",
+        "Mentions scopes emerging from the work (not planned up front) and/or offers a per-scope ticket compromise",
+        "Includes or offers a kick-off message/plan"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "We're a 3-person startup (me as founder/designer, two engineers). I read about Shape Up — should we do six-week cycles with a betting table and cool-downs?",
+      "expected_output": "Adoption advice scaled to size: a team that small can drop most of the structure (fixed cycles, cool-down, formal pitches, betting table) but should keep the phases deliberate: set an appetite, shape, bet, build, and know which hat you're wearing. Bets can vary in length. It suggests a concrete way to start and notes when to add structure as the team grows.",
+      "files": [],
+      "assertions": [
+        "Says a 2-3 person team doesn't need the full formal structure (cycles/cool-down/betting table/formal pitches)",
+        "Insists they still shape work and set appetites before building",
+        "Mentions being deliberate about which role or phase ('hat') you are in",
+        "Gives a concrete first step or lightweight process to try"
+      ]
+    }
+  ]
+}
