@@ -1,0 +1,13 @@
+[project]
+name = "acme-core"
+version = "0.1.0"
+description = "Domain rules for acme short links: codes, URLs, and slugs. No I/O."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14"
+dependencies = []
+classifiers = ["Programming Language :: Python :: 3.14", "Typing :: Typed"]
+
+[build-system]
+requires = ["uv_build>=0.12.18,<0.13"]
+build-backend = "uv_build"

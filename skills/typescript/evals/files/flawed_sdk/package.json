@@ -1,0 +1,21 @@
+{
+  "name": "@acme/weather-sdk",
+  "version": "2.3.0",
+  "description": "Client for the Acme weather API",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "node --experimental-strip-types server/server.ts",
+    "start": "ts-node server/server.ts",
+    "lint": "tslint -p ."
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tslint": "^6.1.3",
+    "typescript": "^5.4.5"
+  }
+}

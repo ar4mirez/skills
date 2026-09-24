@@ -1,0 +1,22 @@
+[
+  {"query": "set up a new Python project with uv, ruff, and mypy strict", "should_trigger": true},
+  {"query": "my FastAPI endpoint blocks under load, I call requests inside async def", "should_trigger": true},
+  {"query": "how do I structure a Python repo with a shared library, a CLI, and an API?", "should_trigger": true},
+  {"query": "migrate our setup.py and requirements.txt to pyproject.toml with a lockfile", "should_trigger": true},
+  {"query": "write Alembic migrations and async SQLAlchemy 2.0 models for Postgres", "should_trigger": true},
+  {"query": "Dockerize my Python API with a small image and deploy it with Kamal", "should_trigger": true},
+  {"query": "should I use dataclasses or pydantic models for my domain objects?", "should_trigger": true},
+  {"query": "pytest fixtures for a real Postgres database plus hypothesis property tests", "should_trigger": true},
+  {"query": "profile this slow python script and tell me where the time goes", "should_trigger": true},
+  {"query": "is the free-threaded no-GIL build worth using for my CPU-heavy Python workers?", "should_trigger": true},
+  {"query": "Write a Go HTTP server with pgx and sqlc", "should_trigger": false},
+  {"query": "Set up a Bun + Elysia API with Drizzle", "should_trigger": false},
+  {"query": "fix this Rails controller N+1 query", "should_trigger": false},
+  {"query": "Build a pandas + matplotlib analysis of this sales CSV in a Jupyter notebook", "should_trigger": false},
+  {"query": "Configure Django admin inlines and a custom ModelAdmin for our models", "should_trigger": false},
+  {"query": "Flash MicroPython onto an ESP32 and blink an LED", "should_trigger": false},
+  {"query": "What's the best way to care for a pet ball python?", "should_trigger": false},
+  {"query": "Write a Rust CLI with clap that parses a config file", "should_trigger": false},
+  {"query": "Explain how Postgres MVCC and vacuum work", "should_trigger": false},
+  {"query": "Write a TypeScript React component with a form and validation", "should_trigger": false}
+]

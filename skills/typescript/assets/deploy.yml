@@ -1,0 +1,38 @@
+# config/deploy.yml (Kamal 2) for a Node + Hono service. Replace every <placeholder>.
+service: links
+image: <github_user>/links
+
+builder:
+  arch: amd64
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+
+proxy:
+  host: <links.example.com>
+  app_port: 3000           # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up
+    interval: 3
+  ssl: true                # Let's Encrypt. Behind Cloudflare (proxied, Full (strict)), use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 3000
+    LOG_LEVEL: info
+  secret:
+    - PREVIEW_BASE_URL
+
+# server.ts force-exits 8s after SIGTERM; Docker's stop timeout for proxied roles is 10s.
+# kamal-proxy has already drained in-flight requests (drain_timeout, default 30s) by then.

@@ -1,0 +1,22 @@
+[
+  {"query": "what tsconfig should I use for a new Node 24 project in 2026? strict flags, nodenext or bundler?", "should_trigger": true},
+  {"query": "upgrading to TypeScript 7 and tsc says Option 'baseUrl' has been removed, what do I do", "should_trigger": true},
+  {"query": "how do I type a discriminated union for API responses and make the switch exhaustive in TS", "should_trigger": true},
+  {"query": "set up a pnpm monorepo with a shared ts library, catalogs, biome, and vitest", "should_trigger": true},
+  {"query": "my npm package's types don't resolve for users on moduleResolution nodenext, how should the exports map look", "should_trigger": true},
+  {"query": "can I run .ts files directly with node now without ts-node? why does my enum fail", "should_trigger": true},
+  {"query": "typescript-eslint won't install with typescript 7, how do I get no-floating-promises", "should_trigger": true},
+  {"query": "review this TS code: const data = JSON.parse(body) as User; user!.name", "should_trigger": true},
+  {"query": "add request timeouts and cancellation to my fetch calls in a Hono app running on Node", "should_trigger": true},
+  {"query": "write vitest tests with msw for a typescript API client and check the inferred types", "should_trigger": true},
+  {"query": "Build an Elysia API on Bun with Eden Treaty and Drizzle", "should_trigger": false},
+  {"query": "Write a Go HTTP service with net/http and sqlc", "should_trigger": false},
+  {"query": "Create a Rails 8 app with Hotwire and Solid Queue", "should_trigger": false},
+  {"query": "Style this landing page with Tailwind CSS and make it responsive", "should_trigger": false},
+  {"query": "Write a Python FastAPI endpoint with Pydantic validation", "should_trigger": false},
+  {"query": "Explain how the JavaScript event loop handles microtasks in the browser (no TypeScript involved)", "should_trigger": false},
+  {"query": "Set up a Kubernetes ingress with cert-manager for my cluster", "should_trigger": false},
+  {"query": "Write a Rust CLI with clap that parses a config file", "should_trigger": false},
+  {"query": "Build a SwiftUI settings screen for my iOS app", "should_trigger": false},
+  {"query": "Write a bash script to rotate nginx logs daily", "should_trigger": false}
+]

@@ -1,0 +1,25 @@
+packages:
+  - apps/*
+  - packages/*
+
+allowBuilds:
+  msw: false  # postinstall only copies the browser service worker; Node tests do not need it
+
+catalog:
+  '@arethetypeswrong/cli': 0.18.5
+  '@biomejs/biome': 2.5.14
+  '@hono/node-server': 2.1.1
+  '@hono/standard-validator': 0.4.0
+  '@vitest/coverage-v8': 5.0.1
+  '@types/node': ^24.13.6
+  fast-check: 4.10.2
+  hono: 4.13.9
+  msw: 2.15.0
+  oxlint: 1.85.0
+  oxlint-tsgolint: 7.0.2003
+  pino: 10.3.1
+  publint: 0.3.24
+  tsdown: 0.23.0
+  typescript: 7.0.2
+  vitest: 5.0.1
+  zod: 4.6.5

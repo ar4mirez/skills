@@ -1,0 +1,35 @@
+# .github/workflows/release.yml: publish acme-core to PyPI with trusted publishing on a tag.
+# One-time setup on pypi.org: add a trusted publisher for this repo, workflow `release.yml`,
+# environment `pypi`. No API token is stored anywhere.
+name: Release
+on:
+  push:
+    tags: ["acme-core-v*"]
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv build --package acme-core --no-sources
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write          # OIDC token for trusted publishing; only this job gets it
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+      # Uploads with PEP 740 attestations (uv publish doesn't generate them yet).
+      - uses: pypa/gh-action-pypi-publish@release/v1

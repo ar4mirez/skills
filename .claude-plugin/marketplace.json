@@ -45,6 +45,15 @@
       ]
     },
     {
+      "name": "python",
+      "description": "Opinionated modern Python expert: uv projects, ruff, strict typing, FastAPI/SQLAlchemy services, pytest, and lean container deploys",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/python"
+      ]
+    },
+    {
       "name": "ruby-on-rails",
       "description": "Opinionated Ruby + Rails 8 expert: simple, modular, testable web apps with Hotwire, the Solid stack and Kamal, plus iOS/Android apps via Hotwire Native",
       "source": "./",
@@ -69,6 +78,15 @@
       "strict": false,
       "skills": [
         "./skills/shape-up"
+      ]
+    },
+    {
+      "name": "typescript",
+      "description": "Opinionated TypeScript expert: strict tsconfig, type-level idioms, schema validation, Biome, Vitest, library publishing, and Node services",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/typescript"
       ]
     },
     {

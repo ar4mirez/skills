@@ -1,0 +1,68 @@
+{
+  "skill_name": "python",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're starting a Python backend: a URL-shortener API plus an admin CLI that share validation logic. Plan so far: Python 3.11, pip install + `pip freeze > requirements.txt`, a setup.py, Flask with raw psycopg2 and f-string SQL, Celery + Redis to count clicks, argparse for the CLI, `print` for logging, tests later, and deploy with `flask run` on a python:3.11-alpine image. Team of two. Sanity-check this and propose the layout, tooling, and stack.",
+      "expected_output": "An opinionated redesign: Python 3.14 pinned in .python-version; uv for everything (uv init, uv add, committed uv.lock, no requirements.txt or setup.py); a uv workspace with packages/<app>-core (typed domain rules, dataclasses, an exception hierarchy, no I/O), <app>-cli (typer, testable, exit codes), and <app>-api (FastAPI app factory + lifespan, pydantic v2 models with extra=forbid, pydantic-settings, async SQLAlchemy 2.0 + psycopg 3 + Alembic migrations shipped in the package, bound parameters never f-string SQL); procrastinate on Postgres instead of Celery + Redis for click counting; stdlib logging with JSON output; ruff (0.16 defaults + extend-select incl. S) + mypy strict; pytest 9 + Hypothesis + real Postgres tests from day one; uvicorn with workers and graceful shutdown instead of `flask run`; multi-stage python:3.14-slim image (not Alpine) with a uv-built venv, non-root, exec-form CMD, deployed with Kamal and a /up health route. Short reasons for each swap and first commands.",
+      "files": [],
+      "assertions": [
+        "Recommends uv with pyproject.toml and a committed uv.lock instead of pip freeze/requirements.txt and setup.py",
+        "Proposes a shared core/domain package plus separate CLI and API packages (uv workspace or equivalent src-layout structure)",
+        "Flags f-string SQL as SQL injection and recommends bound parameters or SQLAlchemy expressions",
+        "Recommends a Postgres-backed job queue (procrastinate or similar) instead of adding Celery + Redis, or justifies keeping Celery",
+        "Recommends ruff and a strict type checker (mypy strict or equivalent)",
+        "Replaces `flask run`/dev server with a production ASGI/WSGI server setup (uvicorn/gunicorn workers) and graceful shutdown or a health route",
+        "Flags the Alpine base image and recommends a slim (glibc) Python image with a non-root user",
+        "Includes testing from the start (pytest, property tests, or real-database tests)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review our Python service at evals/files/flawed_service and tell me what to fix first.",
+      "expected_output": "A severity-ranked review. High: eval() on user expressions (parse_filter), pickle.loads on session blobs, yaml.load without SafeLoader, subprocess.run(..., shell=True) and os.system with interpolated input, SQL built with an f-string (find_link) and string concatenation (search), requests with verify=False, hard-coded DATABASE_URL credentials and SECRET_KEY, time.sleep and requests.post inside async def handlers (plus a sync psycopg2 call in async code). Medium: bare except and except Exception: pass, mutable default tags=[], requests calls without timeouts, asyncio.create_task result dropped, asyncio.get_event_loop() at import, datetime.utcnow(), random used for API tokens, tempfile.mktemp, setup.py + requirements.txt without pyproject/lockfile (unpinned, includes celery[redis]), Dockerfile shell-form CMD with --reload (no SIGTERM handling). Low: missing type hints, typing.Dict/List/Optional, f-string logging, python:3.8 full image (EOL), root user, pip install without hashes. Concrete fixes with code.",
+      "files": ["evals/files/flawed_service"],
+      "assertions": [
+        "Flags eval() on user input as arbitrary code execution",
+        "Flags pickle.loads and/or yaml.load on untrusted data",
+        "Flags the f-string and/or concatenated SQL as SQL injection and shows bound parameters",
+        "Flags shell=True and/or os.system with interpolated arguments",
+        "Flags the hard-coded database credentials and/or SECRET_KEY",
+        "Flags blocking calls (time.sleep, requests) inside async def handlers",
+        "Flags verify=False and/or requests without timeouts",
+        "Flags the bare except / swallowed exception and/or the mutable default argument",
+        "Flags the packaging (setup.py + requirements.txt without pyproject.toml/lockfile) or the Dockerfile (shell-form CMD, --reload, EOL python:3.8, root)",
+        "Orders findings by severity"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our FastAPI endpoint gets really slow under load, and p99 latency goes through the roof when the payment provider is slow. Here's the code:\n\n```python\n@app.post(\"/checkout\")\nasync def checkout(order: Order):\n    resp = requests.post(PAYMENTS_URL, json=order.model_dump())\n    asyncio.create_task(send_receipt(order.email))\n    time.sleep(0.2)  # give the provider time to settle\n    return {\"status\": resp.json()[\"status\"]}\n```\n\nShould I just change it to `def checkout` so FastAPI runs it in a thread?",
+      "expected_output": "Explains that requests.post and time.sleep block the event loop inside async def, stalling every request in the process; making it `def` moves it to AnyIO's thread pool (about 40 threads), which helps but caps concurrency and still has no timeout. Recommends keeping async def with httpx.AsyncClient created once in the lifespan (reused, with an explicit timeout), await asyncio.sleep if a delay is truly needed (or remove it), and replacing the dropped create_task (which can be garbage-collected and loses exceptions) with a durable background job (procrastinate) or at least a tracked task. Mentions raise_for_status/error mapping and ruff ASYNC rules/RUF006 to catch these. Shows corrected code.",
+      "files": [],
+      "assertions": [
+        "Identifies requests.post and time.sleep as blocking the event loop inside async def",
+        "Recommends an async HTTP client (httpx.AsyncClient or equivalent) reused across requests",
+        "Adds an explicit timeout to the outbound payment call",
+        "Explains the trade-off of switching to `def` (thread pool offload, limited threads) rather than just saying yes",
+        "Flags the dropped asyncio.create_task and recommends a TaskGroup/tracked task or a durable background job",
+        "Shows corrected code"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Add a 'tags' feature to our FastAPI + SQLAlchemy short-link service (same layout as the reference: packages/acme-api with routes.py, store.py, db.py, Alembic migrations inside the package, and tests against real Postgres). Users can attach tags to a link (POST /links/{code}/tags with a list of tag names) and list links by tag (GET /tags/{name}/links). Show the migration, the code, and tests.",
+      "expected_output": "A new Alembic revision (0002) creating a tags table with a unique normalized name and a link_tags association table with foreign keys and a composite primary key, plus matching SQLAlchemy Mapped models; tag-name validation in acme_core (a parse_tag function or type reusing the slug rules, raising InvalidInputError); pydantic request model with extra=forbid and AfterValidator; store functions that upsert tags (INSERT ... ON CONFLICT DO NOTHING via the postgresql insert construct) and insert association rows in one transaction, returning domain objects and mapping missing links to NotFoundError; routes with Annotated dependencies returning typed response models, 404 for unknown code, 422 for invalid tags; keyset pagination for the by-tag listing; tests through httpx ASGITransport against real Postgres (success, validation 422, not found 404, idempotent re-tagging), plus a unit/property test for tag parsing; a reminder to run alembic check/autogenerate review and the gate (ruff, mypy strict, pytest).",
+      "files": [],
+      "assertions": [
+        "Adds an Alembic migration with an association table using foreign keys and a uniqueness constraint",
+        "Adds typed SQLAlchemy 2.0 models (Mapped/mapped_column) matching the migration",
+        "Validates tag names in the domain/core layer or via a pydantic validator rather than ad-hoc checks in the route",
+        "Uses bound parameters/SQLAlchemy constructs (no string-built SQL) and performs the multi-row write in one transaction",
+        "Maps unknown link codes to 404 and invalid input to 422 through the existing error handling",
+        "Includes tests that go through the HTTP app against a real database",
+        "Keeps type hints complete (mypy strict-compatible signatures)"
+      ]
+    }
+  ]
+}

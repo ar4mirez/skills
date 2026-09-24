@@ -1,0 +1,16 @@
+{
+  // copied from an old project
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "outDir": "dist",
+    "strict": false,
+    "esModuleInterop": false,
+    "downlevelIteration": true,
+    "declaration": true,
+    "ignoreDeprecations": "6.0",
+  },
+  "include": ["src", "server"]
+}

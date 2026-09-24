@@ -1,0 +1,71 @@
+{
+  "skill_name": "typescript",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "We're bumping our Node API repo from TypeScript 5.4 to the latest TypeScript. tsconfig has target es5, moduleResolution node, baseUrl '.', esModuleInterop false, and we use enums everywhere plus ts-node in dev and tslint + typescript-eslint for linting. We'd also like to stop running a build step for the server. What breaks and what should the new setup look like?",
+      "expected_output": "Explains TS 7.0 (Go-native, released July 2026) removed what 6.0 deprecated: target es5, moduleResolution node/node10, baseUrl, esModuleInterop false, downlevelIteration, outFile now fail (TS5102/TS5108) and ignoreDeprecations doesn't help; new defaults strict true and types [] (add types: [\"node\"]). Proposes the new tsconfig: nodenext, strict + noUncheckedIndexedAccess + verbatimModuleSyntax + erasableSyntaxOnly + allowImportingTsExtensions/rewriteRelativeImportExtensions, paths or package.json imports instead of baseUrl. Replaces enums with as-const objects + unions (Node type stripping rejects enums), runs the server with `node src/server.ts` on Node 24 LTS (stable type stripping, .ts extensions, import type), drops ts-node. Lint: tslint is dead; Biome for format/lint; typescript-eslint doesn't support TS 7 (peer <6.1, no JS API), so use oxlint --type-aware (tsgolint) for type-aware rules or keep TS 6 aliased for ESLint. Gives an ordered migration plan.",
+      "files": [],
+      "assertions": [
+        "States that target es5, moduleResolution node, baseUrl, and esModuleInterop false are removed (errors) in TypeScript 7, not just deprecated",
+        "Mentions that TS 6+/7 defaults types to [] so \"types\": [\"node\"] must be added (or equivalent)",
+        "Recommends moduleResolution nodenext (or bundler for bundled apps) and replacing baseUrl with paths or package.json imports",
+        "Recommends replacing enums with as-const objects/union types because Node type stripping (erasableSyntaxOnly) rejects enums",
+        "Recommends running the server directly with node on Node 24 (type stripping) instead of ts-node, noting .ts import extensions and/or import type",
+        "Says typescript-eslint does not support TypeScript 7 and proposes oxlint type-aware (tsgolint) or a TS 6 side install for type-aware rules",
+        "Recommends Biome (or another maintained linter) instead of tslint",
+        "Includes a concrete tsconfig with strict and noUncheckedIndexedAccess"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Review the SDK in evals/files/flawed_sdk before we publish 3.0 to npm. Tell me what to fix first.",
+      "expected_output": "A severity-ranked review. High: hard-coded API key (and sent in the query string); tsconfig with options removed in TS 7 (target es5, moduleResolution node, baseUrl, esModuleInterop false, downlevelIteration) and strict false; package has no exports map, no types, CommonJS main only; unvalidated JSON cast to Forecast (res.json() as Forecast, JSON.parse as Forecast); floating promises (this.forecast in warm's loop, sendMetrics in the server); server without graceful shutdown. Medium: fetch without AbortSignal/timeout; non-null assertions (alerts![0], env!, req.url!); any/as any; enum, namespace, and parameter properties (not erasable); console.log in library; require() in ESM-intended code; @ts-ignore; empty catch; throw of a string; error rethrown without cause; city not URL-encoded. Low/tooling: tslint, ts-node, node-fetch, dotenv, --experimental-strip-types, two lockfiles, no linter config, Dockerfile running ts-node as root with npm install. Concrete fixes: ESM package with exports {types, default}, tsdown build, publint + attw, Zod schema for Forecast, signal on fetch, Result or typed errors, changesets.",
+      "files": ["evals/files/flawed_sdk"],
+      "assertions": [
+        "Flags the hard-coded API key as a critical issue and says to load it from configuration (and not send it in the URL, or at least not commit it)",
+        "Flags the tsconfig options removed in TypeScript 7 (target es5, moduleResolution node, baseUrl, esModuleInterop false) and/or strict: false",
+        "Flags the missing exports map / types for the published package and recommends ESM with an exports map including a types condition",
+        "Flags casting res.json() or JSON.parse to Forecast without validation and recommends a schema (e.g. Zod)",
+        "Flags at least one floating promise (this.forecast in the loop or sendMetrics())",
+        "Flags fetch calls without a timeout/AbortSignal",
+        "Flags the enum, namespace, or parameter properties as non-erasable or unidiomatic",
+        "Flags non-null assertions and/or any / as any",
+        "Flags console.log in library code, the empty catch, the thrown string, or the error rethrown without cause",
+        "Orders findings by severity and recommends a verification step such as publint/attw or tsc --noEmit"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Write a TypeScript function for our Node service that fetches exchange rates for up to 2,000 currency pairs from a partner API and returns a Map. Right now someone wrote `pairs.forEach(async p => { rates[p] = await (await fetch(url + p)).json() })` and it both hammers the partner and sometimes returns an empty object. Rewrite it properly with tests.",
+      "expected_output": "Explains why forEach(async) returns before the promises settle (empty result) and floats rejections, and why unbounded fan-out hammers the partner. Rewrites with bounded concurrency (a mapLimit/worker pool or p-limit with a limit like 8), an AbortSignal parameter combined with AbortSignal.timeout per request (AbortSignal.any), retries with backoff only for 5xx/network errors, response validated with a Zod schema (no `as`), encodeURIComponent/URL for the pair, errors wrapped with cause, returns Map<Pair, number> (possibly a branded Pair type). Tests with Vitest + msw: success, validation failure, 5xx retry, 4xx no retry, concurrency limit respected, abort honoured; expectTypeOf optional.",
+      "files": [],
+      "assertions": [
+        "Explains that forEach with an async callback does not await the promises (causing the empty result and unhandled rejections)",
+        "Bounds concurrency with a worker pool, mapLimit-style helper, or a limiter such as p-limit",
+        "Gives each request a timeout via AbortSignal.timeout and/or accepts and propagates a caller AbortSignal",
+        "Validates the JSON response with a schema (e.g. Zod) instead of casting",
+        "Retries only transient failures (5xx/network) with backoff, or explicitly justifies not retrying",
+        "Includes tests using Vitest (or bun test) with msw or an injected fetch, covering an error path",
+        "Includes a test or assertion that the concurrency limit is respected",
+        "Avoids any, as-casts of the response, and non-null assertions in the solution"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "I want to publish a small TypeScript utility library (a typed event emitter) to npm in 2026. Should it be dual CJS/ESM? What build tool, what package.json, how do I make sure the types work for everyone, and how do I handle versioning? I use pnpm.",
+      "expected_output": "Recommends ESM-only (Node 22+ can require(esm); dual builds double surface), runtime-agnostic code, type: module, sideEffects false, files [dist], exports map with types first then default, ./package.json export, engines. Build with tsdown (rolldown/oxc) with isolatedDeclarations for fast dts, or plain tsc emit with rewriteRelativeImportExtensions; pin tsdown (pre-1.0). tsconfig with strict, noUncheckedIndexedAccess, verbatimModuleSyntax, erasableSyntaxOnly, isolatedDeclarations, nodenext. Verify with publint --strict and attw --pack --profile esm-only in CI; type tests with expectTypeOf enforced by tsc; test on Node 22/24/26 and Bun. Versioning with changesets (v3; write config by hand since init is interactive), publish from CI with provenance via pnpm publish (rewrites workspace:/catalog:). JSR optional.",
+      "files": [],
+      "assertions": [
+        "Recommends ESM-only (or clearly justifies dual) and mentions that modern Node can require() ESM or that dual packages add hazards",
+        "Shows an exports map with the types condition listed first",
+        "Recommends tsdown (or plain tsc emit) and mentions isolatedDeclarations for declaration generation",
+        "Recommends publint and are-the-types-wrong (attw) to verify the packed package",
+        "Recommends type tests (expectTypeOf or tsd) for the emitter's inferred types",
+        "Recommends changesets (or an equivalent release tool) for versioning",
+        "Recommends publishing from CI with npm provenance or trusted publishing",
+        "Recommends testing across multiple Node versions (and optionally Bun)"
+      ]
+    }
+  ]
+}

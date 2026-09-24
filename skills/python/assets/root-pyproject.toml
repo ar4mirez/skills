@@ -1,0 +1,99 @@
+# Workspace root: no [project] table, so it's a virtual root that only holds the
+# workspace definition, the shared dev tools, and the tool configuration.
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv]
+# Dev tools are installed into the one workspace venv by `uv sync`.
+required-version = ">=0.12"
+
+[dependency-groups]
+dev = [
+    "acme-api",
+    "acme-cli",
+    "acme-core",
+    "coverage>=7.16.1",
+    "httpx>=0.28.1",
+    "hypothesis>=6.168.1",
+    "mypy>=2.3.1",
+    "pytest>=9.1.1",
+    "ruff>=0.16.8",
+]
+
+[tool.uv.sources]
+acme-core = { workspace = true }
+acme-cli = { workspace = true }
+acme-api = { workspace = true }
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+# Workspace members use src/ layouts; list them so isort knows what is first-party.
+src = ["packages/*/src"]
+# A virtual workspace root has no requires-python for ruff to infer from, so without
+# this ruff assumes an old target and misreports (F821 on PEP 649 annotations, PERF203).
+target-version = "py314"
+
+[tool.ruff.lint]
+# ruff 0.16+ enables a curated default set (413 rules: pyflakes, bugbear, pyupgrade,
+# simplify, pylint errors, async, datetime, ...). Keep it and extend it with families
+# the defaults only sample; don't replace it with `select`.
+extend-select = [
+    "I",     # import sorting (all of isort, not just the default subset)
+    "S",     # bandit: eval, pickle, shell=True, SQL strings, no timeout, verify=False, secrets
+    "PT",    # pytest style
+    "PTH",   # pathlib over os.path
+    "ARG",   # unused arguments
+    "T20",   # print() left in code
+    "FAST",  # FastAPI: Annotated dependencies, redundant response_model
+    "TID",   # tidy imports: no relative imports
+    "DTZ",   # naive datetimes
+    "ASYNC", # blocking calls in async functions
+    "BLE",   # blind `except Exception`
+    "G",     # logging format (no f-strings in log calls)
+    "RUF",   # dangling asyncio tasks, unsorted __all__, unused noqa
+    "N",     # pep8 naming
+    "RET",   # return consistency
+    "C4",    # comprehensions
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101", "S105", "S106", "ARG001"]
+"**/migrations/**" = ["N999"]  # revision files start with digits (0001_...)
+
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "all"
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+strict = true
+python_version = "3.14"
+plugins = ["pydantic.mypy"]
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool", "deprecated"]
+files = ["packages"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+warn_required_dynamic_aliases = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest]
+minversion = "9.0"
+strict = true
+testpaths = ["packages"]
+addopts = ["--import-mode=importlib", "-ra"]
+filterwarnings = ["error"]
+
+# ---------------------------------------------------------------- coverage
+[tool.coverage.run]
+branch = true
+patch = ["subprocess"]  # also measure `python -m ...` subprocesses started by tests
+source = ["acme_core", "acme_cli", "acme_api"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 90
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "@overload", "if __name__ == .__main__.:"]

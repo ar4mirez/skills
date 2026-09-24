@@ -1,0 +1,58 @@
+# config/deploy.yml (Kamal 2) for acme-api. Replace every <placeholder>.
+service: acme-api
+image: <github_user>/acme-api
+
+builder:
+  arch: amd64            # build where you deploy; QEMU cross-builds of wheels are slow
+
+servers:
+  web:
+    hosts:
+      - <server_ip>
+  worker:                # background jobs (procrastinate); no proxy, no HTTP
+    hosts:
+      - <server_ip>
+    cmd: acme-api worker --concurrency 4
+    proxy: false
+
+proxy:
+  host: <api.example.com>
+  app_port: 8000         # kamal-proxy defaults to 80
+  healthcheck:
+    path: /up            # 200 only when Postgres answers
+    interval: 3
+  ssl: true              # Let's Encrypt. Behind Cloudflare (proxied, Full (strict)), use an Origin CA cert:
+  # ssl:
+  #   certificate_pem: CERTIFICATE_PEM
+  #   private_key_pem: PRIVATE_KEY_PEM
+  # forward_headers: true
+
+registry:
+  server: ghcr.io
+  username: <github_user>
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+env:
+  clear:
+    PORT: 8000
+    LOG_LEVEL: INFO
+    WEB_CONCURRENCY: 2           # uvicorn worker processes per container (~1 per core)
+    SHUTDOWN_GRACE_SECONDS: 8    # under Docker's 10s stop timeout for proxied roles
+  secret:
+    - DATABASE_URL
+
+accessories:
+  db:
+    image: postgres:18
+    host: <db_ip>
+    port: "127.0.0.1:5432:5432"
+    env:
+      secret:
+        - POSTGRES_PASSWORD
+    directories:
+      - data:/var/lib/postgresql   # postgres:18 moved PGDATA under /var/lib/postgresql/18/docker
+
+# Migrations: .kamal/hooks/pre-deploy runs `acme-api migrate` from the NEW image before it
+# boots. The old version still serves traffic, so migrations must be backward compatible
+# (expand, then contract).

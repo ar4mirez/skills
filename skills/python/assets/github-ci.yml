@@ -1,0 +1,37 @@
+# .github/workflows/ci.yml: the zero-warning gate for a uv workspace.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env: { POSTGRES_USER: postgres, POSTGRES_PASSWORD: postgres, POSTGRES_DB: acme_test }
+        ports: ["5432:5432"]
+        options: --health-cmd="pg_isready" --health-interval=5s --health-timeout=5s --health-retries=10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/acme_test
+      UV_LOCKED: "1"            # every uv command fails if uv.lock is out of date
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10   # reads required-version from pyproject.toml
+        with:
+          enable-cache: true
+      - run: uv sync                   # Python from .python-version, all members + dev group
+      - run: uv run ruff format --check
+      - run: uv run ruff check --output-format=github
+      - run: uv run mypy
+      - run: uv run coverage run -m pytest
+      - run: uv run coverage combine && uv run coverage report   # branch coverage, fail_under
+      - run: uv audit --preview-features audit-command            # OSV advisories for uv.lock
+      - run: uv build --all-packages --no-sources                 # wheels build without workspace sources

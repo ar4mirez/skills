@@ -1,0 +1,34 @@
+[project]
+name = "acme-api"
+version = "0.1.0"
+description = "HTTP API for acme short links."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14"
+dependencies = [
+    "acme-core",
+    "alembic>=1.20.0",
+    "fastapi>=0.141.1",
+    "procrastinate>=3.10.0",
+    "psycopg[binary,pool]>=3.3.6",
+    "pydantic>=2.13.5",
+    "pydantic-settings>=2.15.0",
+    # Verified on 2.0.54. 2.1.0 (2026-09-24) changes async/driver defaults: run the suite on it, then lift.
+    "sqlalchemy[asyncio]>=2.0.54,<2.1",
+    "uvicorn[standard]>=0.53.0",
+]
+
+[project.scripts]
+acme-api = "acme_api.__main__:main"
+
+[tool.uv.sources]
+acme-core = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.12.18,<0.13"]
+build-backend = "uv_build"
+
+# `uv run alembic ...` from this directory (revision --autogenerate, history, check).
+[tool.alembic]
+script_location = "%(here)s/src/acme_api/migrations"
+file_template = "%%(rev)s_%%(slug)s"

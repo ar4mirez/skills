@@ -1,0 +1,5 @@
+#!/bin/sh
+# .kamal/hooks/pre-deploy: apply migrations with the NEW image, once, before it takes traffic.
+# The old version is still serving, so migrations must be backward compatible (expand, then contract).
+set -eu
+kamal app exec --primary --roles=web --version="$KAMAL_VERSION" "acme-api migrate"
