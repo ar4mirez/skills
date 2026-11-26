@@ -127,7 +127,7 @@ The method's core idea is to shape before committing, give the builder a
 bounded whole, integrate early, and track unknowns. It transfers well to
 humans building with coding agents, or to agents acting as builders.
 
-- **The pitch is the agent's brief.** An agent handed a raw idea ("add a
+- **The pitch is the agent's spec.** An agent handed a raw idea ("add a
   calendar") will build the six-month version, or the wrong tenth of it. Hand
   it a pitch with elements, rabbit-hole patches, and explicit **no-gos**. No-gos
   matter even more for agents, because agents rarely cut scope on their own.

@@ -17,7 +17,7 @@ repo's own documents onto the kit.
 | `EXTENSIONS.md` | opt-in | The extension ladder, extension points and their contracts, versioning | Internal APIs |
 | `docs/prd/` | full | Product area files split from `PRODUCT.md`, source PRDs | |
 | `docs/tech/` | as needed | Technical area files split from `TECH.md` | |
-| `docs/milestones/` | full | Briefs `MNN-slug.md`, an index, a TEMPLATE | Dates or hours |
+| `docs/milestones/` | full | Plans `MNN-slug.md`, an index, a TEMPLATE | Dates or hours |
 | `docs/runbooks/` | full | One operational situation per file | Design docs |
 | `docs/security/` | full | Security area splits, threat model detail, scans, reviews | Secrets |
 | `docs/changes/` | full | One file per released version, written by `rotate` | |

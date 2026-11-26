@@ -16,7 +16,7 @@ description: >-
 license: MIT
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
   source: "https://basecamp.com/shapeup"
 ---
 
@@ -66,7 +66,7 @@ in progress?"*
 | A rough solution | Risks and rabbit holes | `references/shaping.md` | Risk walk-through, patches, out-of-bounds cases, cuts |
 | "Write it up" or a draft pitch to review | Pitch | `references/pitch.md`, `assets/pitch-template.md` | Pitch, checked with `scripts/check_pitch.py` |
 | Several pitches, "what next cycle?", a backlog | Betting | `references/betting.md`, `assets/betting-table-template.md` | Cycle plan and kick-off message (`assets/kickoff-message-template.md`) |
-| A cycle starting, a team that just got a pitch | Hand over and first piece | `references/building.md` | Kick-off brief and the first slice to integrate |
+| A cycle starting, a team that just got a pitch | Hand over and first piece | `references/building.md` | Kick-off plan and the first slice to integrate |
 | A pile of tasks, "how do we organize this?" | Map the scopes | `references/building.md`, `assets/scope-map-template.md` | Scope map with must-haves and `~` nice-to-haves |
 | "Are we on track?", a status request | Show progress | `references/progress-and-stopping.md` | Hill chart update (`scripts/hill_chart.py`) |
 | A deadline near and too much left | Decide when to stop | `references/progress-and-stopping.md` | Scope-hammer decisions, and a ship / cut / extend call |

@@ -38,7 +38,7 @@ decision record that made it.
 
 ## Sizing work
 
-Milestones are sized in tokens and context, never in time. A brief that
+Milestones are sized in tokens and context, never in time. A plan that
 won't fit one working session is split.
 
 ## Areas

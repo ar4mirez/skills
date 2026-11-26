@@ -1,6 +1,6 @@
 # Kit conventions
 
-Read this before you write requirement IDs, front matter, briefs, decision
+Read this before you write requirement IDs, front matter, plans, decision
 records or risk acceptances, or before you split a file. Each rule says why,
 so you can make judgment calls where the repo differs.
 
@@ -25,7 +25,7 @@ requirements: [AUTH-01]  # inline list, may be []
   (`PRODUCT.md`, `SECURITY.md`, area files), it lists exactly the IDs that
   file's tables define. Everywhere else, it lists the IDs the doc covers, and
   each one must exist.
-- **Milestone briefs** also carry `budget_tokens: <number>`.
+- **Milestone plans** also carry `budget_tokens: <number>`.
 - Lists stay inline (`[A-01, B-02]`). The helper doesn't read multi-line YAML
   lists, so a tool without a YAML parser can still read the field.
 - Bump `version` when the meaning changes, not for typo fixes.
@@ -48,7 +48,7 @@ reading every file. Run `kit.sh index <repo>` to list them all.
 - Security requirements use `SEC-NN` in `SECURITY.md`. Non-functional tech
   requirements may live in `TECH.md` with their own prefix.
 
-Why: briefs, tests, decisions and incidents all point at IDs. Renumbering
+Why: plans, tests, decisions and incidents all point at IDs. Renumbering
 silently breaks every one of those links.
 
 ## Traceability: requirement, then test, then milestone
@@ -88,14 +88,14 @@ To split a file that is over its cap:
 4. Fix the `requirements` front matter in both files, then run `audit` and
    `trace`. The matrix must list the same IDs as before the split.
 
-## Milestone briefs
+## Milestone plans
 
-- File name `docs/milestones/MNN-slug.md`. Split briefs are `MNNa`, `MNNb`.
+- File name `docs/milestones/MNN-slug.md`. Split plans are `MNNa`, `MNNb`.
 - Ordered steps, contracts first. Each step ends in something checkable.
 - Exit tests are named by requirement ID. A milestone is done when they pass,
   not when time runs out.
 - Size it with `budget_tokens`: the tokens one agent session can spend on it,
-  including reading. If the brief won't fit, split it before starting. Never
+  including reading. If the plan won't fit, split it before starting. Never
   write dates, hours, deadlines, ETAs or story points, because the audit
   flags them. Calendar estimates don't hold up for agent work. Token budgets
   and exit tests do.
