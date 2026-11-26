@@ -33,7 +33,7 @@ the latest patch of these.
 | proptest | 1.11.0 | |
 | criterion | 0.8.2 | Use `std::hint::black_box` |
 | reqwest | 0.13.5 | For outbound HTTP; keep rustls |
-| cargo-nextest / cargo-deny / cargo-machete | 0.9.146 / 0.20.2 / 0.9.2 | Installed with `--locked` |
+| cargo-nextest / cargo-deny / cargo-machete | 0.9.152 / 0.22.1 / 0.10.1 | Pinned as `tool@version` in CI |
 | sqlx-cli | 0.9.0 | `--no-default-features --features rustls,postgres` |
 | cargo-chef | 0.1.78 | Docker images `lukemathwalker/cargo-chef:0.1.78-rust-1.98.1-slim-trixie` |
 | cargo-llvm-cov | 0.9.1 | Coverage |
