@@ -9,6 +9,15 @@
   },
   "plugins": [
     {
+      "name": "agentic-project-kit",
+      "description": "Language-agnostic agentic project kit: scaffold, audit and upgrade AGENTS.md, PRODUCT/TECH/SECURITY specs, decision records, token-sized milestones and agent-safety rules, with a POSIX sh checker",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/agentic-project-kit"
+      ]
+    },
+    {
       "name": "bun-elysia",
       "description": "Opinionated Bun + Elysia expert: type-safe TypeScript monorepos with Eden Treaty, Drizzle, pg-boss, Better Auth, bun test, Biome, and compiled-binary Kamal deploys",
       "source": "./",

@@ -52,6 +52,9 @@ jobs:
           pip install --quiet "skills-ref @ git+https://github.com/agentskills/agentskills#subdirectory=skills-ref"
           for d in skills/*/; do skills-ref validate "$d"; done
 
+      - name: Shellcheck bundled shell scripts
+        run: find skills -path '*/scripts/*.sh' -print -exec shellcheck -s sh {} +
+
       - name: Test bundled scripts
         run: python3 -m unittest discover -s tests -v
 

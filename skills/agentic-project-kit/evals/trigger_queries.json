@@ -1,0 +1,22 @@
+[
+  {"query": "set up AGENTS.md, CLAUDE.md and the spec docs for my new repo so claude and codex can work on it", "should_trigger": true},
+  {"query": "can you audit this repo and tell me what's missing for agentic development? don't change anything", "should_trigger": true},
+  {"query": "our TECH.md is 180KB and the agent keeps losing context, how should we restructure the docs", "should_trigger": true},
+  {"query": "make this repo agent-ready", "should_trigger": true},
+  {"query": "our CLAUDE.md and AGENTS.md have drifted apart, which one should be the source of truth?", "should_trigger": true},
+  {"query": "upgrade the client's repo to our project kit but they already have ADRs and a CHANGELOG", "should_trigger": true},
+  {"query": "which requirements in PRODUCT.md have no tests yet? give me a traceability matrix", "should_trigger": true},
+  {"query": "we just shipped 1.4.0, rotate CHANGES.md", "should_trigger": true},
+  {"query": "write a decision record for picking Postgres over SQLite, the owner said 'go with postgres, we need concurrency'", "should_trigger": true},
+  {"query": "add a risk acceptance for the missing MFA on the admin panel to SECURITY.md", "should_trigger": true},
+  {"query": "how should agents plan milestones in this repo? I don't want time estimates", "should_trigger": true},
+  {"query": "an agent ran rm -rf on the wrong path last week, write the postmortem and the guardrail", "should_trigger": true},
+  {"query": "write a GitHub Actions workflow that runs pytest on every push", "should_trigger": false},
+  {"query": "fix the typo in the README install section", "should_trigger": false},
+  {"query": "implement the login endpoint in our Express app", "should_trigger": false},
+  {"query": "explain how Rust lifetimes work", "should_trigger": false},
+  {"query": "write a pitch for our next six-week cycle", "should_trigger": false},
+  {"query": "generate API reference docs from these TypeScript types", "should_trigger": false},
+  {"query": "set up eslint and prettier for this project", "should_trigger": false},
+  {"query": "draft release notes for the marketing blog about our new feature", "should_trigger": false}
+]

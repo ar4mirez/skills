@@ -1,0 +1,59 @@
+{
+  "skill_name": "agentic-project-kit",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm starting a new repo at ./ledger-cli for a small command-line budgeting tool (Rust, but that shouldn't matter). Set it up so coding agents can work on it well. I'm the owner, handle @mara. Keep it minimal.",
+      "expected_output": "Scaffolds the lite profile with owner mara, fills the placeholders from the user's description (asking only for what it can't infer), keeps CLAUDE.md as the one-line @AGENTS.md import, keeps the Agent safety section, and finishes with an audit showing 0 errors.",
+      "files": [],
+      "assertions": [
+        "Runs the scaffold with the lite profile (not full), because the user asked for minimal",
+        "CLAUDE.md contains only @AGENTS.md",
+        "AGENTS.md keeps an Agent safety section covering scratch space, no global config writes, guarded deletes and secrets",
+        "PRODUCT.md requirements use AREA-NN IDs in a '| ID | Requirement |' table and are not invented beyond what the user described",
+        "Nothing language-specific is added to the kit docs beyond the user's own stack facts",
+        "Runs kit.sh audit at the end and reports 0 errors"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Audit evals/files/legacy-repo against the agentic project kit and tell me what's missing. Don't change anything yet.",
+      "expected_output": "Runs kit.sh audit (read-only) and reports a gap report: missing PRODUCT/TECH/SECURITY, CLAUDE.md being a copy rather than an import, no Agent safety section, and the decision record missing Options/Recommendation and an owner quote. Makes no file changes and offers an upgrade.",
+      "files": ["evals/files/legacy-repo/AGENTS.md", "evals/files/legacy-repo/CLAUDE.md", "evals/files/legacy-repo/docs/decisions/0001-queue.md"],
+      "assertions": [
+        "Makes no writes to the audited repo (no scaffold, no edits)",
+        "Reports CLAUDE.md as a copy that must become the one-line @AGENTS.md import (K02)",
+        "Reports the missing Agent safety section (K16)",
+        "Reports missing lite files PRODUCT.md, TECH.md and SECURITY.md (K01)",
+        "Flags the decision record for missing Options and Recommendation sections and no quoted owner words (K15)",
+        "Flags JOBS-01 as referenced but not defined (K08)",
+        "Ends by offering an upgrade rather than performing one"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Our client repo already has docs/adr/ for decisions, a CHANGELOG.md, and .github/SECURITY.md. Bring it up to the agentic kit (full profile) without duplicating what they have.",
+      "expected_output": "Creates docs/kit-map.md mapping docs/decisions/ to docs/adr/, SECURITY.md to .github/SECURITY.md and CHANGES.md to CHANGELOG.md, scaffolds only the remaining roles, merges the kit's Agent safety section into the existing AGENTS.md instead of replacing it, and audits to 0 errors.",
+      "files": [],
+      "assertions": [
+        "Writes docs/kit-map.md with rows for docs/decisions/, SECURITY.md and CHANGES.md pointing at the client's files",
+        "Does not create a second decisions folder or a duplicate SECURITY.md",
+        "Leaves the client's mapped files in their own format",
+        "Keeps or adds the Agent safety section in AGENTS.md and makes CLAUDE.md the one-line import",
+        "Mentions that kit.sh rotate only works on CHANGES.md, so a mapped CHANGELOG.md is rotated by hand"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "Write the next milestone brief for the auth work: login (AUTH-01) and password reset (AUTH-02). We want it done by Friday, roughly 3 days of work.",
+      "expected_output": "Writes docs/milestones/MNN-auth.md from the template with ordered steps, both requirement IDs, exit tests named by ID and a budget_tokens value. Explains that the kit sizes milestones in tokens and exit tests, not dates or days, and leaves Friday and 3 days out of the brief.",
+      "files": [],
+      "assertions": [
+        "The brief front matter lists requirements [AUTH-01, AUTH-02] and a numeric budget_tokens",
+        "Exit tests name AUTH-01 and AUTH-02",
+        "The brief contains no deadline, date, or day/hour estimate",
+        "Tells the user why the calendar estimate was left out"
+      ]
+    }
+  ]
+}
