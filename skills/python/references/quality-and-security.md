@@ -148,6 +148,10 @@ and publishes via PyPI trusted publishing (details in
 `references/packaging-and-deploy.md`). Lint the workflows with `actionlint`
 (both pass it).
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 ## Secure coding rules
 
 - **Input:** validate at the boundary into typed values (pydantic models

@@ -160,9 +160,10 @@ async def client(app: FastAPI) -> AsyncIterator[httpx.AsyncClient]:
 Test against **real Postgres**, never SQLite-as-a-stand-in (different SQL,
 types, constraints, and locking) and never a mocked session.
 
-- `TEST_DATABASE_URL` points at a disposable database. Without it, tests
-  skip locally and **fail when `CI` is set**, so a broken pipeline can't pass
-  by skipping.
+- `TEST_DATABASE_URL` points at a disposable database whose name ends in
+  `_test`; the fixtures abort on any other name, because they drop the
+  schema. Without it, tests skip locally and **fail when `CI` is set**, so a
+  broken pipeline can't pass by skipping.
 - Migrate once per session through the production code path
   (`migrate(settings)`, twice, to prove idempotence), after resetting the
   schema (`DROP SCHEMA public CASCADE`).

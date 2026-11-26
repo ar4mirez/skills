@@ -31,7 +31,8 @@ with glibc linked dynamically. It runs on `gcr.io/distroless/cc-debian13`.
 `assets/Dockerfile` (written carefully but **not built in verification**; Docker wasn't
 available):
 1. **Build stage** `gcc:16-trixie`: install ninja, pkg-config, git, curl, zip/unzip/tar (vcpkg
-   prerequisites); install CMake 4.4.3 from Kitware's release tarball (Debian ships 3.31);
+   prerequisites); install CMake 4.4.3 from Kitware's release tarball and check its pinned
+   SHA-256 (Debian ships 3.31);
    clone vcpkg at the pinned `VCPKG_COMMIT` and bootstrap it; then `cmake --preset release &&
    cmake --build --preset release --target acme_wc_server`. A BuildKit cache mount on
    `/root/.cache/vcpkg` keeps vcpkg's binary archives between builds.

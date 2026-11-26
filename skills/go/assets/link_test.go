@@ -23,7 +23,7 @@ func TestNormalizeURL(t *testing.T) {
 		{name: "relative", in: "/just/a/path", wantErr: true},
 		{name: "javascript scheme", in: "javascript:alert(1)", wantErr: true},
 		{name: "no host", in: "https:///path", wantErr: true},
-		{name: "user info", in: "https://bank.com@evil.example/", wantErr: true},
+		{name: "user info", in: "https://trusted.example@attacker.example/", wantErr: true},
 		{name: "control char", in: "https://example.com/\x7f", wantErr: true},
 	}
 	for _, tt := range tests {

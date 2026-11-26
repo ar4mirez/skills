@@ -21,7 +21,7 @@ compatibility: >-
   use only built-in modules.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Bun + Elysia

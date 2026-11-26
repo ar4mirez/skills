@@ -9,7 +9,9 @@ const Env = T.Object({
   DATABASE_URL: T.String({ minLength: 1 }),
   DATABASE_PREPARE: T.Boolean({ default: true }), // false behind PgBouncer transaction mode
   WEB_URL: T.String({ default: 'http://localhost:3001' }),
-  BETTER_AUTH_SECRET: T.String({ minLength: 32, default: 'dev-only-secret-change-me-0123456789' }),
+  // Secrets never get a default: a missing one must fail boot, not fall back to a public value.
+  // Generate per environment with `openssl rand -base64 32`.
+  BETTER_AUTH_SECRET: T.String({ minLength: 32 }),
 })
 
 export type Env = Static<typeof Env>

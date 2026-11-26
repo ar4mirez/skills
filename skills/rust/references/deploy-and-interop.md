@@ -71,7 +71,8 @@ confusing "not found" error, because the glibc loader is missing.
 
 `assets/Dockerfile`:
 1. `chef` stage: `lukemathwalker/cargo-chef:0.1.78-rust-1.98.1-slim-trixie`,
-   the same Rust version as `rust-toolchain.toml`.
+   the same Rust version as `rust-toolchain.toml`. It's a third-party image,
+   so it's pinned by `@sha256` digest too; bump tag and digest together.
 2. `planner`: `cargo chef prepare` writes `recipe.json` (the dependency graph).
 3. `builder`: `cargo chef cook --release --locked` builds only dependencies.
    This layer is cached until `Cargo.toml`/`Cargo.lock` change. Then it copies

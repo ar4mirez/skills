@@ -164,6 +164,10 @@ flakier than feature tests. Dusk is the older alternative.
 
 ## CI gate
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml` runs on a Postgres 18 service:
 1. `composer install`, and `.env` + key.
 2. `npm ci && npm run build` (views need the manifest outside tests).

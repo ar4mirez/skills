@@ -134,6 +134,14 @@ class AuditTests(unittest.TestCase):
         sql = [f["location"] for f in out["findings"] if f["check"] == "sql-string-building"]
         self.assertEqual(sql, ["app/db.py:14", "app/db.py:21"])  # f-string and + concatenation
 
+    def test_secret_values_never_reach_the_report(self):
+        # Findings name the variable and location only, so running the audit
+        # never copies a credential into the agent's context or a CI log.
+        for extra in (("--json",), ()):
+            res = run(AUDIT, FLAWED, "--fail-on", "none", *extra)
+            for value in ("SuperSecret123", "dev-secret-change-me-8f2a1c"):
+                self.assertNotIn(value, res.stdout + res.stderr)
+
     def test_test_files_are_skipped(self):
         _, out = audit_json(FLAWED, "--fail-on", "none")
         self.assertFalse([f for f in out["findings"] if f["location"].startswith("tests/")])

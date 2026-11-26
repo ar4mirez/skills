@@ -20,7 +20,7 @@ compatibility: >-
   v2, and Kamal 2. Bundled scripts need only the Go toolchain (go run).
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Go

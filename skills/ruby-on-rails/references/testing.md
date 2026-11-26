@@ -185,6 +185,10 @@ Zero warnings, with every step blocking merge:
 The GitHub Actions workflow is in `assets/github-ci.yml`. The same steps also
 run locally through `config/ci.rb` / `bin/ci` (`assets/ci.rb`).
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 Hotwire Native: request specs with a native user agent assert native-specific
 rendering:
 

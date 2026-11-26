@@ -39,7 +39,7 @@ func TestNormalizeURL(t *testing.T) {
 		wantErr bool
 	}{
 		{name: "https", in: "https://go.dev/doc", want: "https://go.dev/doc"},
-		{name: "user info", in: "https://bank.com@evil.example/", wantErr: true},
+		{name: "user info", in: "https://trusted.example@attacker.example/", wantErr: true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -179,7 +179,8 @@ func BenchmarkNormalizeURL(b *testing.B) {
   inhibit inlining.
 - Compare runs with benchstat, not by eyeballing:
   `go test -run '^$' -bench . -count 10 > old.txt`, change the code, repeat to
-  `new.txt`, then `go run golang.org/x/perf/cmd/benchstat@latest old.txt new.txt`.
+  `new.txt`, then `go tool benchstat old.txt new.txt` (add it once with
+  `go get -tool golang.org/x/perf/cmd/benchstat`, so go.mod and go.sum pin it).
 - See `performance.md` for profiling from benchmarks.
 
 ## Examples

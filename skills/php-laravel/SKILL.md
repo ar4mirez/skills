@@ -22,7 +22,7 @@ compatibility: >-
   the standard library only.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # PHP + Laravel

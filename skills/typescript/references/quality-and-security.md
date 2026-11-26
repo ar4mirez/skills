@@ -89,7 +89,11 @@ Node 22/24/26, and a Bun smoke import. Pinned majors verified 2026-09:
 `actions/checkout@v7`, `pnpm/action-setup@v6` (reads `packageManager`),
 `actions/setup-node@v7` with `cache: pnpm`, `oven-sh/setup-bun@v2`.
 `permissions: contents: read`, a `concurrency` group, and timeouts on
-every job. Pin third-party actions by commit SHA in high-security repos.
+every job.
+
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
 
 ## Dependency and supply-chain hygiene
 

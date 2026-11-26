@@ -179,5 +179,8 @@ breaks downstream users' builds of your crate.
 - Add an MSRV job for published libraries
   (`cargo +<msrv> check --workspace --all-features`), and a nightly Miri job
   for crates with `unsafe`.
-- Action versions verified September 2026: `actions/checkout@v7`,
-  `Swatinem/rust-cache@v2` (2.9.2), `taiki-e/install-action@v2` (2.87).
+- Action versions verified November 2026: `actions/checkout@v7` (7.0.1),
+  `Swatinem/rust-cache@v2` (2.9.3), `taiki-e/install-action@v2` (2.90.11).
+- Every `uses:` is pinned to a full commit SHA with its release in a trailing
+  comment, so a moved tag can't change what runs; let Dependabot or Renovate
+  bump the pins.

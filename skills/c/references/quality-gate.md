@@ -109,6 +109,10 @@ C has no lockfile, so make dependencies explicit and scannable:
 
 ## The GitHub Actions workflow
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml` → `.github/workflows/ci.yml`:
 - `test`: a matrix of {gcc, clang} × {ci, ci-release}, plus clang/tsan. Each
   job runs `cmake --preset`, `cmake --build --preset`, and

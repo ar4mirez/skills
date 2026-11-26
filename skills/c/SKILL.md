@@ -20,7 +20,7 @@ compatibility: >-
   with 4.4), Ninja. Bundled scripts need Python 3.9+ standard library only.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # C

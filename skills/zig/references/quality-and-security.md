@@ -30,6 +30,10 @@ error nobody sees. The tests are what reference your code.
 
 ## GitHub Actions template
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml` (copy to `.github/workflows/ci.yml`):
 - `mlugg/setup-zig@v2` with no version pinned in the workflow; it reads
   `minimum_zig_version` from `build.zig.zon` and caches the Zig caches;

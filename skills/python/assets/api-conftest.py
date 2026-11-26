@@ -1,11 +1,13 @@
 """Integration fixtures: a real Postgres (TEST_DATABASE_URL), migrated once per session.
 
 Without TEST_DATABASE_URL the database tests are skipped locally and fail in CI (where
-CI=true), so a misconfigured pipeline can't pass silently.
+CI=true), so a misconfigured pipeline can't pass silently. The session drops and recreates
+the public schema, so the URL must name a database ending in `_test`; anything else aborts.
 """
 
 import os
 from collections.abc import AsyncIterator, Iterator
+from urllib.parse import urlsplit
 
 import httpx
 import psycopg
@@ -31,6 +33,10 @@ def settings() -> Settings:
         if os.environ.get("CI"):
             pytest.fail("TEST_DATABASE_URL must be set in CI")
         pytest.skip("set TEST_DATABASE_URL to run database tests")
+    db_name = urlsplit(TEST_DATABASE_URL).path.lstrip("/")
+    if not db_name.endswith("_test"):
+        # Name only the database, never the URL: it carries the password.
+        pytest.exit(f"refusing to reset {db_name!r}: TEST_DATABASE_URL must name a *_test database", returncode=2)
     return Settings(database_url=SecretStr(TEST_DATABASE_URL), db_pool_size=2)
 
 

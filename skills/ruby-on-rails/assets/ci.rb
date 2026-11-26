@@ -14,7 +14,13 @@ CI.run do
   step "Tests: Seeds", "env RAILS_ENV=test bin/rails db:seed:replant"
 
   if success?
-    step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"
+    # Opt-in only. `gh signoff` comes from the basecamp/gh-signoff GitHub CLI extension:
+    # it posts a passing commit status to GitHub with your gh credentials, so branch
+    # protection can require a local green run. Install it and set CI_SIGNOFF=1 only if
+    # the team has agreed to use it; otherwise bin/ci just reports the result.
+    if ENV["CI_SIGNOFF"] == "1"
+      step "Signoff: All systems go. Ready for merge and deploy.", "gh signoff"
+    end
   else
     failure "Signoff: CI failed. Do not merge or deploy.", "Fix the issues and try again."
   end

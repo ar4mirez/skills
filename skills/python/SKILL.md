@@ -22,7 +22,7 @@ compatibility: >-
   Scripts need Python 3.11+ (standard library only).
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Python
@@ -143,7 +143,9 @@ logging; setup.py/requirements-only projects, missing lockfiles, EOL
 `requires-python`, missing ruff or type-checker config; and Dockerfiles that are
 Alpine, full-size, root, shell-form, `--reload`, or unlocked. It skips test
 files, complements ruff and mypy, and doesn't replace them. Run it with the
-project's Python version or newer so new syntax parses.
+project's Python version or newer so new syntax parses. Findings name a
+secret's variable and line, never its value; report it the same way and tell
+the user to rotate it.
 
 ### 3. Write the code
 
