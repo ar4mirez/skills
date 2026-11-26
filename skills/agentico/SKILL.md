@@ -28,9 +28,9 @@ metadata:
 
 Agentico is an agentic project kit. You set up and maintain the documents
 that let agents work on a repository without guessing: what to build, how,
-under which security rules, and which decisions are already made. The kit doesn't depend on any language or
-framework. It's plain Markdown with a little front matter, and a POSIX `sh`
-helper checks it.
+under which security rules, and which decisions are already made. The kit
+doesn't depend on any language or framework. It's plain Markdown with a
+little front matter, and a POSIX `sh` helper checks it.
 
 Run the helper from this skill's directory:
 `sh scripts/kit.sh <command> [options] <repo>`. Run `--help` to see every
