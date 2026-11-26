@@ -22,7 +22,7 @@ compatibility: >-
   Python 3.9+ and only the standard library.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Modern C++

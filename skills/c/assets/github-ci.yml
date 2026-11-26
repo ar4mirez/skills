@@ -25,7 +25,7 @@ jobs:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
       ASAN_OPTIONS: detect_leaks=1:strict_string_checks=1:detect_stack_use_after_return=1
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends cmake ninja-build clang
       - run: cmake --preset ${{ matrix.preset }}
       - run: cmake --build --preset ${{ matrix.preset }}
@@ -34,7 +34,7 @@ jobs:
   analyze:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends cmake ninja-build clang clang-tidy clang-format cppcheck
       - name: clang-format (no diff allowed)
         run: git ls-files '*.c' '*.h' | xargs clang-format --dry-run --Werror
@@ -53,7 +53,7 @@ jobs:
   fuzz:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends cmake ninja-build clang
       - run: cmake --preset fuzz && cmake --build --preset fuzz
       - name: fuzz for 60 seconds

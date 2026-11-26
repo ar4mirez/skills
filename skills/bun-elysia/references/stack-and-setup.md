@@ -111,7 +111,13 @@ See `assets/root-package.json`. Its key pieces:
   build with `--no-compile-autoload-dotenv`. For production, prefer real
   environment variables (Kamal secrets).
 - `packages/config` validates everything at boot (`assets/env.ts`). Add each
-  new variable to the schema with a type and, where safe, a default.
+  new variable to the schema with a type and, where safe, a default. Secrets
+  (`BETTER_AUTH_SECRET`, API keys) never get a default, so a missing one fails
+  boot instead of silently using a value anyone can read in the repo.
+  `.env.example` lists `BETTER_AUTH_SECRET=` with an empty value and a
+  "generate with `openssl rand -base64 32`" comment. The test preload
+  (`assets/test-setup.ts`) fills in a random one, so `bun test` runs without
+  a `.env`.
 
 ## Upgrading
 

@@ -31,7 +31,7 @@ go test -run '^$' -bench BenchmarkNormalizeURL -benchmem -count 10 ./internal/li
 go test -run '^$' -bench BenchmarkNormalizeURL -cpuprofile cpu.out -memprofile mem.out ./internal/link
 go tool pprof -http=:0 cpu.out          # flame graph is the default view since 1.26
 go tool pprof -sample_index=alloc_space -http=:0 mem.out
-go run golang.org/x/perf/cmd/benchstat@latest old.txt new.txt
+go tool benchstat old.txt new.txt       # after: go get -tool golang.org/x/perf/cmd/benchstat (pinned in go.mod)
 ```
 
 The template's `BenchmarkNormalizeURL` measured 581 ns/op, 192 B/op, 2

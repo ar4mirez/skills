@@ -22,7 +22,7 @@ compatibility: >-
   22.18+ (native type stripping) or Bun, using only node: built-ins.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # TypeScript

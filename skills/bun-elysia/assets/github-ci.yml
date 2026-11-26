@@ -20,10 +20,12 @@ jobs:
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/acme_test
       NODE_ENV: test
     steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version-file: package.json   # or: bun-version: 1.4.x
+      - name: Throwaway auth secret for this run
+        run: echo "BETTER_AUTH_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
       - run: bun install --frozen-lockfile
       - run: bunx biome ci .                        # lint + format, zero warnings
       - run: bun run typecheck                      # tsc --noEmit in every workspace

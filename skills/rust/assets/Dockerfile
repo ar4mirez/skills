@@ -1,7 +1,8 @@
 # Dockerfile for acme-api. Build from the workspace root: docker build -t acme-api .
 # cargo-chef caches the dependency build in its own layer, so code-only changes
 # rebuild in seconds instead of recompiling every crate.
-FROM lukemathwalker/cargo-chef:0.1.78-rust-1.98.1-slim-trixie AS chef
+# Third-party image: pinned by digest so a re-pushed tag can't change the build (bump both together).
+FROM lukemathwalker/cargo-chef:0.1.78-rust-1.98.1-slim-trixie@sha256:38dfdbf4fda95c516f873f33032e490baa988b75f7d83c7d12f788f770785b36 AS chef
 WORKDIR /app
 # Use the image's toolchain as-is; rust-toolchain.toml would otherwise make rustup
 # fetch rustfmt/clippy during the build. Keep this tag in sync with the toolchain pin.

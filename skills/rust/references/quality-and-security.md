@@ -172,12 +172,19 @@ breaks downstream users' builds of your crate.
   components named in `rust-toolchain.toml`.
 - `Swatinem/rust-cache@v2` caches `~/.cargo` and `target/`.
 - `taiki-e/install-action@v2` installs prebuilt cargo-nextest, cargo-deny, and
-  cargo-machete. sqlx-cli isn't in its manifest, so it's built with
-  `cargo install --locked` (cached after the first run).
+  cargo-machete, each pinned (`tool@version`) so CI doesn't pick up a new
+  release unannounced. sqlx-cli isn't in its manifest, so it's built from
+  source (cached after the first run). Pin the version:
+  `cargo install <tool> --version <v> --locked`. `--locked` alone pins only
+  the tool's dependencies, not which release installs. Keep sqlx-cli's
+  version equal to the `sqlx` dependency.
 - The Postgres service container backs `#[sqlx::test]`, and
   `SQLX_OFFLINE=true` keeps compilation independent of it.
 - Add an MSRV job for published libraries
   (`cargo +<msrv> check --workspace --all-features`), and a nightly Miri job
   for crates with `unsafe`.
-- Action versions verified September 2026: `actions/checkout@v7`,
-  `Swatinem/rust-cache@v2` (2.9.2), `taiki-e/install-action@v2` (2.87).
+- Action versions verified November 2026: `actions/checkout@v7` (7.0.1),
+  `Swatinem/rust-cache@v2` (2.9.3), `taiki-e/install-action@v2` (2.90.11).
+- Every `uses:` is pinned to a full commit SHA with its release in a trailing
+  comment, so a moved tag can't change what runs; let Dependabot or Renovate
+  bump the pins.

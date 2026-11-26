@@ -103,6 +103,10 @@ formatters:
 
 ## The CI workflow
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml`: `actions/checkout@v7`, `actions/setup-go@v7` with
 `go-version-file: go.mod` (it caches modules and the build cache), a
 Postgres 18 service container, and each gate command above as its own step

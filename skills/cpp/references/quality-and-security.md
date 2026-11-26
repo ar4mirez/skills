@@ -14,6 +14,10 @@
 
 ## The gate (what CI enforces)
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml` runs on every push and PR, with zero warnings:
 1. `clang-format --dry-run -Werror` on every tracked `.cpp`/`.hpp`.
 2. `clang-tidy -p build/dev` on every translation unit (`.clang-tidy` has

@@ -3,6 +3,7 @@ import { mock } from 'bun:test'
 import { Elysia } from 'elysia'
 
 process.env.DATABASE_URL ??= 'postgres://localhost:5432/acme_test'
+process.env.BETTER_AUTH_SECRET ??= crypto.randomUUID() + crypto.randomUUID()
 
 const testAuth = new Elysia({ name: 'plugin.auth' }).macro({
   auth: {

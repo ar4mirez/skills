@@ -132,6 +132,10 @@ build. No extra tooling is needed.
 
 ## The CI gate
 
+Every `uses:` is pinned to a full commit SHA with its release in a trailing
+comment, so a moved tag can't change what runs; let Dependabot or Renovate
+bump the pins.
+
 `assets/github-ci.yml` runs, with zero warnings allowed:
 1. `bun install --frozen-lockfile`
 2. `bunx biome ci .` (lint plus format)

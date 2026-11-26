@@ -22,7 +22,7 @@ compatibility: >-
   zig 0.16 is on PATH.
 metadata:
   author: ar4mirez
-  version: "1.0.0"
+  version: "1.0.1"
 ---
 
 # Zig

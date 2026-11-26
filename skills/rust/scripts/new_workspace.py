@@ -80,6 +80,20 @@ def strip_api_from_ci(text: str) -> str:
     return "".join(ln for ln in text.splitlines(keepends=True) if "sqlx" not in ln)
 
 
+def sqlx_version(cargo_toml: Path) -> str | None:
+    """The sqlx version in [workspace.dependencies], so the sqlx-cli install hint cannot drift from it."""
+    text = cargo_toml.read_text(encoding="utf-8")
+    try:
+        import tomllib
+    except ModuleNotFoundError:  # Python < 3.11: fall back to the one-line inline-table form the asset uses.
+        m = re.search(r'^sqlx\s*=\s*\{[^}]*\bversion\s*=\s*"([^"]+)"', text, re.MULTILINE)
+        return m.group(1) if m else None
+    dep = tomllib.loads(text).get("workspace", {}).get("dependencies", {}).get("sqlx")
+    if isinstance(dep, str):
+        return dep
+    return dep.get("version") if isinstance(dep, dict) else None
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         prog="new_workspace.py",
@@ -134,7 +148,10 @@ def main(argv: list[str]) -> int:
     print(f"  cd {dest}")
     if "api" not in args.without:
         print("  export DATABASE_URL=postgres://postgres@localhost:5432/" + name.replace("-", "_"))
-        print("  cargo install sqlx-cli --locked --no-default-features --features rustls,postgres")
+        # --locked pins only sqlx-cli's own dependencies; --version pins the release to match the library.
+        version = sqlx_version(dest / "Cargo.toml")
+        pin = f"--version {version} " if version else ""
+        print(f"  cargo install sqlx-cli {pin}--locked --no-default-features --features rustls,postgres")
         print(f"  cargo sqlx database create && cargo sqlx migrate run --source crates/{name}-api/migrations")
         print("  cargo sqlx prepare --workspace     # writes .sqlx/ (commit it)")
     print("  cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test")

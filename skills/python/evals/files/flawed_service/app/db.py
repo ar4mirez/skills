@@ -1,6 +1,6 @@
 import psycopg2
 
-DATABASE_URL = "postgresql://admin:SuperSecret123@db.prod.linkshort.io:5432/links"
+DATABASE_URL = "postgresql://admin:SuperSecret123@db.prod.linkshort.example:5432/links"
 SECRET_KEY = "dev-secret-change-me-8f2a1c"
 
 

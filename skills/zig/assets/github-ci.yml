@@ -14,8 +14,8 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: mlugg/setup-zig@v2        # reads minimum_zig_version from build.zig.zon
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1; reads minimum_zig_version from build.zig.zon
       - run: zig fmt --check .
       - run: zig build test --summary all                        # Debug: all safety checks
       - run: zig build test -Doptimize=ReleaseSafe --summary all  # release codegen, checks on
@@ -26,7 +26,7 @@ jobs:
   fuzz:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: mlugg/setup-zig@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
       # Debug fuzz builds fail to compile in 0.16.0 (test runner bug); ReleaseSafe works.
       - run: zig build test --fuzz=100K -Doptimize=ReleaseSafe
