@@ -2,6 +2,7 @@
 the scaffold-and-build test also needs cargo and is skipped without it."""
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -149,6 +150,11 @@ class ScaffoldTests(unittest.TestCase):
             self.assertNotIn("acme", (dest / "crates/linkly-api/src/main.rs").read_text())
             self.assertIn('env!("CARGO_BIN_EXE_linkly")', (dest / "crates/linkly-cli/tests/cli.rs").read_text())
             if HAS_TOMLLIB:
+                import tomllib
+                sqlx = tomllib.loads(root_toml)["workspace"]["dependencies"]["sqlx"]["version"]
+                hint = re.search(r"cargo install sqlx-cli --version (\S+) --locked", res.stdout)
+                self.assertIsNotNone(hint, res.stdout)
+                self.assertEqual(hint.group(1), sqlx)
                 res, out = audit_json(dest, "--fail-on", "low")
                 # Only the lockfile and .sqlx/ are missing until the first build and `cargo sqlx prepare`.
                 self.assertEqual({f["check"] for f in out["findings"]}, {"no-lockfile", "sqlx-offline-missing"}, out)
