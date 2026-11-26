@@ -15,7 +15,7 @@
 | K07 | error | A requirement ID is malformed or defined twice | Use `AREA-NN`. Give the duplicate a new, unused ID. Never renumber the original |
 | K08 | error | A doc's front matter references an ID that no requirement table defines | Fix the typo, or add the requirement first |
 | K09 | warn | No test or code names a requirement | Write the test and name the ID in it. On a new repo this is expected |
-| K10 | warn | A requirement isn't in any milestone brief (checked only when briefs exist) | Plan it in a brief, or mark it `deferred` |
+| K10 | warn | A requirement isn't in any milestone brief (checked only when briefs exist) | Plan it in a brief, or set its Priority cell to `deferred` |
 | K11 | warn | A requirements file's front matter list doesn't match its tables | Set `requirements:` to the IDs the message lists |
 | K12 | error / warn | A risk acceptance has bad dates, has expired, or runs more than 90 days (warns within 14 days of expiry) | Fix the risk, or add a fresh acceptance row |
 | K13 | warn | `CHANGES.md` still holds released version sections | Run `kit.sh rotate --version X <repo>` once per old version, or move them into `docs/changes/` by hand |

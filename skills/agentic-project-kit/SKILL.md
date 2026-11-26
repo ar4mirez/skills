@@ -97,7 +97,7 @@ know what belongs in which kit file, or when you map a client repo.
   spec costs the context the work needed.
 - **Stable requirement IDs:** `AREA-NN` (for example `AUTH-01`), defined in a
   table whose header starts `| ID | Requirement |`. Never renumber or reuse
-  an ID. Mark a dropped one withdrawn. Tests name the ID in a test name or a
+  an ID. Set a dropped one's Priority cell to `withdrawn`. Tests name the ID in a test name or a
   comment, in any language, so `trace` can follow it.
 - **Front matter on every spec and record** (not `AGENTS.md`/`CLAUDE.md`):
   `status`, `version`, `owner`, and `requirements: [..]` as an inline list.

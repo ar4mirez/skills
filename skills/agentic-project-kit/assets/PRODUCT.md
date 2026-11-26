@@ -35,8 +35,8 @@ to `docs/prd/<area>.md` and keep only its row here.
 
 ## Requirements
 
-IDs are stable: never renumber or reuse one. To drop a requirement, mark it
-withdrawn. Tests name the ID they prove.
+IDs are stable: never renumber or reuse one. To drop a requirement, set its
+Priority to `withdrawn` (or `deferred`). Tests name the ID they prove.
 
 | ID | Requirement | Priority | Acceptance |
 | --- | --- | --- | --- |

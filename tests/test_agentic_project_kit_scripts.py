@@ -168,7 +168,7 @@ class AuditTests(KitTestCase):
         product = self.repo / "PRODUCT.md"
         text = product.read_text().replace(
             "| CORE-01 | {{the first thing",
-            "| CORE-01 | dup | must | x |\n| core-2 | bad | must | x |\n| OLD-01 | gone, withdrawn | must | x |\n| CORE-01 | {{the first thing")
+            "| CORE-01 | dup | must | x |\n| core-2 | bad | must | x |\n| OLD-01 | gone | withdrawn | x |\n| CORE-01 | {{the first thing")
         product.write_text(text)
         (self.repo / "docs" / "milestones" / "M01-core.md").write_text(
             "---\nstatus: in-progress\nversion: 1.0.0\nowner: ana\nrequirements: [CORE-01, NOPE-99]\n"
@@ -239,6 +239,15 @@ class AuditTests(KitTestCase):
         self.assertIn("error K01 SECURITY.md: mapped to .github/SECURITY.md", out)
         self.assertIn("PAY-01 has no test", out)  # mapped files are requirement sources
 
+    def test_na_map_row_keeps_lite_profile(self):
+        self.scaffold()
+        (self.repo / "docs" / "kit-map.md").write_text(
+            "| Kit file | Maps to | Why |\n| --- | --- | --- |\n| CHANGES.md | n/a | releases on GitHub |\n")
+        res = self.audit()
+        self.assertIn("profile lite", res.stdout)
+        self.assertNotIn("error ", res.stdout)
+        self.assertEqual(res.returncode, 0, res.stdout)
+
 
 class TraceIndexTests(KitTestCase):
     def test_trace_matrix(self):
@@ -254,6 +263,16 @@ class TraceIndexTests(KitTestCase):
         rows = {l.split("\t")[0]: l.split("\t") for l in lines[1:]}
         self.assertEqual(rows["CORE-01"][3:], ["1", "M01-core"])
         self.assertEqual(rows["SEC-01"][3:], ["0", "-"])  # node_modules is skipped
+
+    def test_requirement_text_does_not_mark_inactive(self):
+        self.scaffold("--profile", "full")
+        product = self.repo / "PRODUCT.md"
+        product.write_text(product.read_text().replace(
+            "| CORE-01 | {{the first thing",
+            "| CORE-02 | Support deferred billing | must | x |\n| CORE-01 | {{the first thing"))
+        lines = run("trace", self.repo).stdout.splitlines()
+        rows = {l.split("\t")[0]: l.split("\t") for l in lines[1:]}
+        self.assertEqual(rows["CORE-02"][1], "ok")
 
     def test_index(self):
         self.scaffold()

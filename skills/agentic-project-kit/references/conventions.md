@@ -42,8 +42,9 @@ reading every file. Run `kit.sh index <repo>` to list them all.
   `| ID | Requirement |`. Other tables (threats `TM-NN`, risks `RA-NN`, evals
   `EV-NN`) use different headers, so they don't count as requirements.
 - **IDs are stable.** Never renumber, reuse or recycle one. To drop a
-  requirement, keep its row and add the word `withdrawn`. Use `deferred` for
-  "not now". Both are skipped by the test and milestone checks.
+  requirement, keep its row and set its Priority (or a Status) cell to
+  `withdrawn`. Set it to `deferred` for "not now". Both are skipped by the
+  test and milestone checks; the words elsewhere in the row don't count.
 - Security requirements use `SEC-NN` in `SECURITY.md`. Non-functional tech
   requirements may live in `TECH.md` with their own prefix.
 

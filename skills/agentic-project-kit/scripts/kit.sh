@@ -262,9 +262,11 @@ FNR == 1 { intable = 0; sep = 0 }
 		next
 	}
 	if (first ~ /^:?-+:?$/) next
-	low = tolower($0)
 	state = (first ~ /^[A-Z][A-Z0-9]+-[0-9][0-9]+$/ && index(first, "-") <= 9 && length(first) <= 16) ? "ok" : "malformed"
-	if (state == "ok" && low ~ /withdrawn|deferred/) state = "inactive"
+	for (i = 4; state == "ok" && i <= n; i++) {
+		cell = tolower(c[i]); gsub(/^[ \t]+|[ \t]+$/, "", cell)
+		if (cell == "withdrawn" || cell == "deferred") state = "inactive"
+	}
 	f = FILENAME; if (index(f, root) == 1) f = substr(f, length(root) + 1)
 	print first "\t" f "\t" FNR "\t" state
 	next
@@ -715,7 +717,7 @@ cmd_audit() {
 	if [ "$PROFILE" = auto ]; then
 		PROFILE=lite
 		for au_f in AGENTIC.md CHANGES.md docs/milestones docs/runbooks docs/incidents; do
-			if [ -e "$REPO/$au_f" ] || map_target "$au_f" >/dev/null; then PROFILE=full; fi
+			if [ -e "$REPO/$au_f" ] || { au_t=$(map_target "$au_f") && [ "$au_t" != n/a ]; }; then PROFILE=full; fi
 		done
 	fi
 	case $PROFILE in lite | full) ;; *) die "--profile must be auto, lite or full" ;; esac
