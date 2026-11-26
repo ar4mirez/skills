@@ -9,12 +9,12 @@
   },
   "plugins": [
     {
-      "name": "agentic-project-kit",
-      "description": "Language-agnostic agentic project kit: scaffold, audit and upgrade AGENTS.md, PRODUCT/TECH/SECURITY specs, decision records, token-sized milestones and agent-safety rules, with a POSIX sh checker",
+      "name": "agentico",
+      "description": "Agentico, a language-agnostic agentic project kit: scaffold, audit and upgrade AGENTS.md, PRODUCT/TECH/SECURITY specs, decision records, token-sized milestones and agent-safety rules, with a POSIX sh checker",
       "source": "./",
       "strict": false,
       "skills": [
-        "./skills/agentic-project-kit"
+        "./skills/agentico"
       ]
     },
     {

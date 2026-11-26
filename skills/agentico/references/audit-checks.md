@@ -15,11 +15,11 @@
 | K07 | error | A requirement ID is malformed or defined twice | Use `AREA-NN`. Give the duplicate a new, unused ID. Never renumber the original |
 | K08 | error | A doc's front matter references an ID that no requirement table defines | Fix the typo, or add the requirement first |
 | K09 | warn | No test or code names a requirement | Write the test and name the ID in it. On a new repo this is expected |
-| K10 | warn | A requirement isn't in any milestone brief (checked only when briefs exist) | Plan it in a brief, or set its Priority cell to `deferred` |
+| K10 | warn | A requirement isn't in any milestone plan (checked only when plans exist) | Add it to a milestone plan, or set its Priority cell to `deferred` |
 | K11 | warn | A requirements file's front matter list doesn't match its tables | Set `requirements:` to the IDs the message lists |
 | K12 | error / warn | A risk acceptance has bad dates, has expired, or runs more than 90 days (warns within 14 days of expiry) | Fix the risk, or add a fresh acceptance row |
 | K13 | warn | `CHANGES.md` still holds released version sections | Run `kit.sh rotate --version X <repo>` once per old version, or move them into `docs/changes/` by hand |
-| K14 | error / warn | A milestone brief plans in calendar time (error), or has no `budget_tokens` or Exit tests section (warning) | Remove dates, hours and deadlines. Add a token budget and exit tests |
+| K14 | error / warn | A milestone plan is scheduled in calendar time (error), or has no `budget_tokens` or Exit tests section (warning) | Remove dates, hours and deadlines. Add a token budget and exit tests |
 | K15 | warn | A decision record is missing Options, Recommendation or Decision, or is decided without the owner's quoted words | Add the sections and quote the owner in a `>` block |
 | K16 | error | `AGENTS.md` has no Agent safety section | Add the template's section |
 | K17 | warn | An incident has no Guardrail section | Add the rule, test, check or eval case it produced |

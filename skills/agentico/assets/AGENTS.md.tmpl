@@ -17,14 +17,14 @@ When a spec file grows past its cap, it becomes an index that points to
 
 ## How work is planned
 
-- Work comes as milestone briefs in `docs/milestones/`: ordered steps, the
+- Work comes as milestone plans in `docs/milestones/`: ordered steps, the
   requirement IDs they cover, exit tests, and a token budget.
 - Size work in tokens and context. Never plan or report in dates or hours.
-- A brief that won't fit its budget is split before work starts.
+- A plan that won't fit its budget is split before work starts.
 
 ## How to work
 
-1. Read the brief and the requirements it names. Put anything unclear under
+1. Read the plan and the requirements it names. Put anything unclear under
    Open questions, and stop if it blocks the work.
 2. Name tests after the requirement IDs they prove (`AUTH-01` in the test name
    or a comment), so `kit.sh trace` can follow them.
@@ -36,7 +36,7 @@ When a spec file grows past its cap, it becomes an index that points to
 
 ## Definition of done
 
-- The brief's exit tests pass.
+- The plan's exit tests pass.
 - Every requirement you touched has a test that names its ID.
 - Specs, `CHANGES.md` and decision records are updated in the same change.
 - No secrets, credentials or personal data in code, logs, fixtures or docs.

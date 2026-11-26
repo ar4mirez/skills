@@ -1,5 +1,5 @@
 #!/bin/sh
-# kit.sh: scaffold, audit, trace, index and rotate an agentic project kit.
+# kit.sh: scaffold, audit, trace, index and rotate an Agentico agentic project kit.
 #
 # Portable POSIX sh. It uses only awk, sed, grep, find, wc, date, mkdir, mv
 # and rm, and needs no language runtime. It writes only inside the target repo
@@ -496,7 +496,7 @@ check_requirements() {
 			f warn K09 "$cr_src" "$cr_id has no test or code that names it; put the ID in the test name or a comment"
 		fi
 		if [ "$cr_ms" = 1 ] && [ "$cr_mlist" = - ]; then
-			f warn K10 "$cr_src" "$cr_id is not planned in any milestone brief"
+			f warn K10 "$cr_src" "$cr_id is not planned in any milestone plan"
 		fi
 	done
 }

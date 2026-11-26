@@ -1,5 +1,5 @@
 {
-  "skill_name": "agentic-project-kit",
+  "skill_name": "agentico",
   "evals": [
     {
       "id": 1,
@@ -17,7 +17,7 @@
     },
     {
       "id": 2,
-      "prompt": "Audit evals/files/legacy-repo against the agentic project kit and tell me what's missing. Don't change anything yet.",
+      "prompt": "Audit evals/files/legacy-repo against the agentico kit and tell me what's missing. Don't change anything yet.",
       "expected_output": "Runs kit.sh audit (read-only) and reports a gap report: missing PRODUCT/TECH/SECURITY, CLAUDE.md being a copy rather than an import, no Agent safety section, and the decision record missing Options/Recommendation and an owner quote. Makes no file changes and offers an upgrade.",
       "files": ["evals/files/legacy-repo/AGENTS.md", "evals/files/legacy-repo/CLAUDE.md", "evals/files/legacy-repo/docs/decisions/0001-queue.md"],
       "assertions": [
@@ -45,13 +45,13 @@
     },
     {
       "id": 4,
-      "prompt": "Write the next milestone brief for the auth work: login (AUTH-01) and password reset (AUTH-02). We want it done by Friday, roughly 3 days of work.",
-      "expected_output": "Writes docs/milestones/MNN-auth.md from the template with ordered steps, both requirement IDs, exit tests named by ID and a budget_tokens value. Explains that the kit sizes milestones in tokens and exit tests, not dates or days, and leaves Friday and 3 days out of the brief.",
+      "prompt": "Write the next milestone plan for the auth work: login (AUTH-01) and password reset (AUTH-02). We want it done by Friday, roughly 3 days of work.",
+      "expected_output": "Writes docs/milestones/MNN-auth.md from the template with ordered steps, both requirement IDs, exit tests named by ID and a budget_tokens value. Explains that the kit sizes milestones in tokens and exit tests, not dates or days, and leaves Friday and 3 days out of the plan.",
       "files": [],
       "assertions": [
-        "The brief front matter lists requirements [AUTH-01, AUTH-02] and a numeric budget_tokens",
+        "The plan front matter lists requirements [AUTH-01, AUTH-02] and a numeric budget_tokens",
         "Exit tests name AUTH-01 and AUTH-02",
-        "The brief contains no deadline, date, or day/hour estimate",
+        "The plan contains no deadline, date, or day/hour estimate",
         "Tells the user why the calendar estimate was left out"
       ]
     }

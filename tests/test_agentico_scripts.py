@@ -1,4 +1,4 @@
-"""Tests for skills/agentic-project-kit/scripts/kit.sh (run: make test).
+"""Tests for skills/agentico/scripts/kit.sh (run: make test).
 
 Every test works inside a fresh temporary directory, so the script never
 touches the real repository or the home directory. On CI, `sh` is dash, which
@@ -11,7 +11,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-SKILL = Path(__file__).resolve().parent.parent / "skills" / "agentic-project-kit"
+SKILL = Path(__file__).resolve().parent.parent / "skills" / "agentico"
 KIT = SKILL / "scripts" / "kit.sh"
 TODAY = "2026-11-26"
 
@@ -178,7 +178,7 @@ class AuditTests(KitTestCase):
         self.assertIn("CORE-01 is already defined", out)
         self.assertIn("error K08 docs/milestones/M01-core.md: references NOPE-99", out)
         self.assertIn("warn K11 PRODUCT.md", out)
-        self.assertIn("warn K10 SECURITY.md:", out)  # SEC-01 is in no brief
+        self.assertIn("warn K10 SECURITY.md:", out)  # SEC-01 is in no plan
         self.assertNotIn("OLD-01 has no test", out)  # withdrawn rows skip the test check
         self.assertIn("expected [CORE-01, OLD-01]", out)  # ...but stay in the front matter list
 

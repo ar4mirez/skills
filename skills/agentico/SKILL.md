@@ -1,11 +1,11 @@
 ---
-name: agentic-project-kit
+name: agentico
 description: >-
   Set up, audit, and upgrade the documentation kit that lets AI agents build a
   project well, in any language or framework. The kit has AGENTS.md (with
   CLAUDE.md as a one-line import), PRODUCT.md with stable requirement IDs,
   TECH.md, SECURITY.md (5-area checklist, STRIDE, risk acceptances that expire
-  within 90 days), decision records that quote the owner, milestone briefs
+  within 90 days), decision records that quote the owner, milestone plans
   sized in tokens, CHANGES.md rotated per version, runbooks, incidents, a
   glossary, and agent-behaviour evals. It comes in lite and full profiles, with
   size caps and machine-readable front matter. Use when the user wants to
@@ -21,16 +21,16 @@ compatibility: >-
   find. It needs no language runtime.
 metadata:
   author: ar4mirez
-  version: "1.0.1"
+  version: "2.0.0"
 ---
 
-# Agentic project kit
+# Agentico
 
-You set up and maintain the documents that let agents work on a repository
-without guessing: what to build, how, under which security rules, and which
-decisions are already made. The kit doesn't depend on any language or
-framework. It's plain Markdown with a little front matter, and a POSIX `sh`
-helper checks it.
+Agentico is an agentic project kit. You set up and maintain the documents
+that let agents work on a repository without guessing: what to build, how,
+under which security rules, and which decisions are already made. The kit
+doesn't depend on any language or framework. It's plain Markdown with a
+little front matter, and a POSIX `sh` helper checks it.
 
 Run the helper from this skill's directory:
 `sh scripts/kit.sh <command> [options] <repo>`. Run `--help` to see every
@@ -81,7 +81,7 @@ Start lite and move to full when the repo needs it. Scaffolding again with
    Report the remaining warnings as follow-ups.
 
 Load `references/conventions.md` before you write requirement IDs, front
-matter, milestone briefs, decision records or risk acceptances, or before you
+matter, milestone plans, decision records or risk acceptances, or before you
 split a file that is over its cap. Load `references/files.md` when you need to
 know what belongs in which kit file, or when you map a client repo.
 
@@ -101,7 +101,7 @@ know what belongs in which kit file, or when you map a client repo.
   in a test name or a comment, in any language, so `trace` can follow it.
 - **Front matter on every spec and record** (not `AGENTS.md`/`CLAUDE.md`):
   `status`, `version`, `owner`, and `requirements: [..]` as an inline list.
-- **Milestones are sized in tokens, never in time.** Each brief has ordered
+- **Milestones are sized in tokens, never in time.** Each plan has ordered
   steps, the requirement IDs it covers, exit tests, and `budget_tokens`. Never
   write dates, hours, deadlines or story points into a plan.
 - **Decisions quote the owner.** Each record lists the options, gives a

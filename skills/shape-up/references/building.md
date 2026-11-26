@@ -23,7 +23,7 @@ through /3.3-chapter-12). This is a paraphrased working guide.
   fills in the outline with real design and implementation.
 
 If a user asks you to "break this pitch into tickets and assign them", explain
-the paper-shredder problem. Offer instead a kick-off brief and a suggested
+the paper-shredder problem. Offer instead a kick-off plan and a suggested
 **first piece**, and let the team discover tasks. If their tooling requires
 tickets, create them *per scope, as scopes are discovered*, with the team
 owning them.
