@@ -1,5 +1,5 @@
 #!/bin/sh
-# kit.sh: scaffold, audit, trace, index and rotate an agentic project kit.
+# kit.sh: scaffold, audit, trace, index and rotate an Agentico agentic project kit.
 #
 # Portable POSIX sh. It uses only awk, sed, grep, find, wc, date, mkdir, mv
 # and rm, and needs no language runtime. It writes only inside the target repo

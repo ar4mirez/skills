@@ -24,11 +24,11 @@ metadata:
   version: "2.0.0"
 ---
 
-# Agentic project kit
+# Agentico
 
-You set up and maintain the documents that let agents work on a repository
-without guessing: what to build, how, under which security rules, and which
-decisions are already made. The kit doesn't depend on any language or
+Agentico is an agentic project kit. You set up and maintain the documents
+that let agents work on a repository without guessing: what to build, how,
+under which security rules, and which decisions are already made. The kit doesn't depend on any language or
 framework. It's plain Markdown with a little front matter, and a POSIX `sh`
 helper checks it.
 
